@@ -9,4 +9,10 @@ public static class Format
 
     /// <summary>Image of a perfume, or a placeholder when it has none.</summary>
     public static string Image(string? url) => string.IsNullOrWhiteSpace(url) ? "/images/perfume-placeholder.svg" : url;
+
+    private static readonly HashSet<string> Families = new(StringComparer.OrdinalIgnoreCase) { "floral", "woody", "oriental", "fresh" };
+
+    /// <summary>Illustration of a perfume family (Floral, Woody…), or the bottle placeholder for a new family.</summary>
+    public static string FamilyImage(string categoryName) =>
+        Families.Contains(categoryName) ? $"/images/families/{categoryName.ToLowerInvariant()}.svg" : "/images/perfume-placeholder.svg";
 }

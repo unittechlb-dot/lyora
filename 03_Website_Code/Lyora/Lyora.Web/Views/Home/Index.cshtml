@@ -5,10 +5,21 @@
 
 <section class="hero">
     <div class="container hero-inner">
-        <span class="eyebrow">Luxury fragrance house</span>
-        <h1>A perfume that feels like you.</h1>
-        <p>Discover LYORA perfumes, crafted from natural raw materials and matched to your taste.</p>
-        <a class="btn btn-gold" asp-controller="Perfumes" asp-action="Index">Explore perfumes</a>
+        <div class="hero-text">
+            <span class="eyebrow">Luxury fragrance house</span>
+            <h1>A perfume that feels like you.</h1>
+            <p>Discover LYORA perfumes, crafted from natural raw materials and matched to your taste.</p>
+            <div class="hero-actions">
+                <a class="btn btn-gold" asp-controller="Perfumes" asp-action="Index">Explore perfumes</a>
+                @if (User.Identity?.IsAuthenticated != true)
+                {
+                    <a class="btn btn-ghost" asp-controller="Account" asp-action="Register">Join LYORA</a>
+                }
+            </div>
+        </div>
+        <div class="hero-art">
+            <img src="~/images/hero-bottles.svg" alt="LYORA perfume bottles on gold podiums" />
+        </div>
     </div>
 </section>
 
@@ -33,6 +44,7 @@
         @foreach (var category in Model.Categories)
         {
             <a class="category-card" asp-controller="Perfumes" asp-action="Index" asp-route-categoryId="@category.CategoryId">
+                <img class="category-icon" src="@Format.FamilyImage(category.Name)" alt="" />
                 <h3>@category.Name</h3>
                 <p>@category.Description</p>
             </a>
