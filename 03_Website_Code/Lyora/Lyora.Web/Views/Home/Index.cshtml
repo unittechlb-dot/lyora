@@ -1,0 +1,41 @@
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<section class="hero">
+    <div class="container hero-inner">
+        <span class="eyebrow">Luxury fragrance house</span>
+        <h1>A perfume that feels like you.</h1>
+        <p>Discover LYORA perfumes, crafted from natural raw materials and matched to your taste.</p>
+        <a class="btn btn-gold" asp-controller="Perfumes" asp-action="Index">Explore perfumes</a>
+    </div>
+</section>
+
+<section class="container section">
+    <div class="section-head">
+        <h2>Featured perfumes</h2>
+        <a class="link" asp-controller="Perfumes" asp-action="Index">View all →</a>
+    </div>
+    <div class="perfume-grid">
+        @foreach (var perfume in Model.Featured)
+        {
+            <partial name="_PerfumeCard" model="perfume" />
+        }
+    </div>
+</section>
+
+<section class="container section">
+    <div class="section-head">
+        <h2>Shop by family</h2>
+    </div>
+    <div class="category-grid">
+        @foreach (var category in Model.Categories)
+        {
+            <a class="category-card" asp-controller="Perfumes" asp-action="Index" asp-route-categoryId="@category.CategoryId">
+                <h3>@category.Name</h3>
+                <p>@category.Description</p>
+            </a>
+        }
+    </div>
+</section>

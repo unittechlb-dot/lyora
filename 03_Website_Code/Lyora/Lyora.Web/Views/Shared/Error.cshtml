@@ -1,0 +1,13 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<section class="container section empty">
+    <h1>Something went wrong.</h1>
+    <p>Please try again. If the problem continues, check that SQL Server is running and the LyoraDB database exists.</p>
+    @if (Model.ShowRequestId)
+    {
+        <p class="muted">Request ID: <code>@Model.RequestId</code></p>
+    }
+</section>

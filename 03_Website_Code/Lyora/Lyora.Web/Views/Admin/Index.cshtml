@@ -1,0 +1,60 @@
+@model DashboardSummary
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<section class="container section">
+    <div class="page-title">
+        <span class="eyebrow">Administrator</span>
+        <h1>Dashboard</h1>
+        <p class="muted">Welcome, @User.Identity?.Name.</p>
+    </div>
+
+    <div class="stat-grid">
+        <div class="stat">
+            <span class="stat-label">Active perfumes</span>
+            <span class="stat-value">@Model.ActivePerfumes</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Customers</span>
+            <span class="stat-value">@Model.Customers</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Open orders</span>
+            <span class="stat-value">@Model.OpenOrders</span>
+        </div>
+        <div class="stat @(Model.LowStockMaterials.Count > 0 ? "stat-alert" : "")">
+            <span class="stat-label">Low-stock materials</span>
+            <span class="stat-value">@Model.LowStockMaterials.Count</span>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>Raw materials below threshold</h2>
+        @if (Model.LowStockMaterials.Count == 0)
+        {
+            <p class="muted">All raw materials are above their threshold.</p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr><th>Raw material</th><th class="num">In stock</th><th class="num">Threshold</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var m in Model.LowStockMaterials)
+                    {
+                        <tr>
+                            <td>@m.Name</td>
+                            <td class="num low">@m.QuantityInStock.ToString("0.##") @m.Unit</td>
+                            <td class="num">@m.Threshold.ToString("0.##") @m.Unit</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <p class="muted">Product, BOM, inventory and order management are added in Part 4.</p>
+    <a class="link" asp-controller="Account" asp-action="ChangePassword">Change my password</a>
+</section>

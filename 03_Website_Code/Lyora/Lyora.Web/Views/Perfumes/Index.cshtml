@@ -1,0 +1,64 @@
+@model CatalogViewModel
+@{
+    ViewData["Title"] = "Perfumes";
+}
+
+<section class="container section">
+    <div class="page-title">
+        <span class="eyebrow">The collection</span>
+        <h1>Our perfumes</h1>
+    </div>
+
+    <form class="filters" method="get" asp-action="Index">
+        <input type="search" name="search" value="@Model.Search" placeholder="Search by name…" maxlength="100" aria-label="Search by name" />
+
+        <select name="categoryId" aria-label="Family">
+            <option value="">All families</option>
+            @foreach (var c in Model.Categories)
+            {
+                <option value="@c.CategoryId" selected="@(Model.CategoryId == c.CategoryId)">@c.Name</option>
+            }
+        </select>
+
+        <select name="intensity" aria-label="Intensity">
+            <option value="">Any intensity</option>
+            @foreach (var i in Enum.GetValues<ScentIntensity>())
+            {
+                <option value="@i" selected="@(Model.Intensity == i)">@i</option>
+            }
+        </select>
+
+        <select name="style" aria-label="Style">
+            <option value="">Any style</option>
+            @foreach (var s in Enum.GetValues<ScentStyle>())
+            {
+                <option value="@s" selected="@(Model.Style == s)">@s</option>
+            }
+        </select>
+
+        <button type="submit" class="btn btn-dark">Filter</button>
+        @if (Model.HasFilters)
+        {
+            <a class="btn btn-outline" asp-action="Index">Clear</a>
+        }
+    </form>
+
+    <p class="results-count">@Model.Perfumes.Count perfume@(Model.Perfumes.Count == 1 ? "" : "s") found</p>
+
+    @if (Model.Perfumes.Count == 0)
+    {
+        <div class="empty">
+            <h3>No perfume matches your search.</h3>
+            <p>Try another name or remove some filters.</p>
+        </div>
+    }
+    else
+    {
+        <div class="perfume-grid">
+            @foreach (var perfume in Model.Perfumes)
+            {
+                <partial name="_PerfumeCard" model="perfume" />
+            }
+        </div>
+    }
+</section>

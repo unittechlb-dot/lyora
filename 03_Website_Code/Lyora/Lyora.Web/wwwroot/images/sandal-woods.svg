@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500">
+<defs>
+<radialGradient id="bg" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.55"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+<linearGradient id="glass" x1="0" x2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.55"/><stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.15"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0.4"/></linearGradient>
+<linearGradient id="liq" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9A6B43" stop-opacity="0.75"/><stop offset="1" stop-color="#9A6B43"/></linearGradient>
+<linearGradient id="cap" x1="0" x2="1"><stop offset="0" stop-color="#8E6E2F"/><stop offset="0.45" stop-color="#E9D3A0"/><stop offset="1" stop-color="#8E6E2F"/></linearGradient>
+</defs>
+<rect width="400" height="500" fill="#E3D3BC"/>
+<rect width="400" height="500" fill="url(#bg)"/>
+<ellipse cx="200" cy="430" rx="120" ry="14" fill="#000" opacity="0.12"/>
+<rect x="168" y="92" width="64" height="58" rx="6" fill="url(#cap)"/>
+<rect x="182" y="150" width="36" height="22" fill="#C9B07A"/>
+<rect x="110" y="170" width="180" height="258" rx="26" fill="url(#liq)"/>
+<rect x="110" y="170" width="180" height="258" rx="26" fill="url(#glass)" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="2"/>
+<rect x="132" y="190" width="14" height="210" rx="7" fill="#FFFFFF" opacity="0.35"/>
+<rect x="140" y="268" width="120" height="62" rx="4" fill="#FBF8F3" opacity="0.92"/>
+<text x="200" y="294" text-anchor="middle" font-family="Georgia, serif" font-size="18" letter-spacing="5" fill="#1C1A17">LYORA</text>
+<text x="200" y="316" text-anchor="middle" font-family="Arial, sans-serif" font-size="8.5" letter-spacing="2" fill="#8E6E2F">SANDAL WOODS</text>
+<text x="200" y="476" text-anchor="middle" font-family="Georgia, serif" font-size="13" letter-spacing="6" fill="#1C1A17" opacity="0.6">EAU DE PARFUM</text>
+</svg>

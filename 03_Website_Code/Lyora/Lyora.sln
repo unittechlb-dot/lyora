@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lyora.Web", "Lyora.Web\Lyora.Web.csproj", "{8BAEB34C-5EEC-4E52-9F90-A39A294AD868}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lyora.BLL", "Lyora.BLL\Lyora.BLL.csproj", "{46227C73-2347-48D7-9974-4A8E7E829B03}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lyora.DAL", "Lyora.DAL\Lyora.DAL.csproj", "{514DD638-0675-4EE0-B2CF-2F3E9DEC6D9D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8BAEB34C-5EEC-4E52-9F90-A39A294AD868}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BAEB34C-5EEC-4E52-9F90-A39A294AD868}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BAEB34C-5EEC-4E52-9F90-A39A294AD868}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BAEB34C-5EEC-4E52-9F90-A39A294AD868}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46227C73-2347-48D7-9974-4A8E7E829B03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46227C73-2347-48D7-9974-4A8E7E829B03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46227C73-2347-48D7-9974-4A8E7E829B03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46227C73-2347-48D7-9974-4A8E7E829B03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{514DD638-0675-4EE0-B2CF-2F3E9DEC6D9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{514DD638-0675-4EE0-B2CF-2F3E9DEC6D9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{514DD638-0675-4EE0-B2CF-2F3E9DEC6D9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{514DD638-0675-4EE0-B2CF-2F3E9DEC6D9D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

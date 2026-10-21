@@ -1,0 +1,18 @@
+# This repository keeps only the website code and the database scripts.
+/01_UML_Diagrams/
+/04_Report/
+/05_Presentation/
+/*.zip
+/02_Database/*
+!/02_Database/*.sql
+/03_Website_Code/*.docx
+
+# Visual Studio / .NET build output
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+# macOS
+.DS_Store

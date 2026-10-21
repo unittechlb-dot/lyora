@@ -1,0 +1,45 @@
+@model PerfumeDetailsViewModel
+@{
+    var p = Model.Perfume;
+    ViewData["Title"] = p.Name;
+}
+
+<section class="container section">
+    <a class="link back-link" asp-action="Index">← Back to perfumes</a>
+
+    <div class="details">
+        <div class="details-image">
+            <img src="@Format.Image(p.ImageUrl)" alt="@p.Name" />
+        </div>
+
+        <div class="details-info">
+            <span class="eyebrow">@p.CategoryName</span>
+            <h1>@p.Name</h1>
+            <p class="details-price">@Format.Money(p.Price) <span>· @p.SizeMl ml</span></p>
+            <p class="details-description">@p.Description</p>
+
+            <div class="tags">
+                <span class="tag">@p.Intensity scent</span>
+                <span class="tag">@p.Style style</span>
+            </div>
+
+            <p class="stock @(p.IsAvailable ? "stock-in" : "stock-out")">
+                @(p.IsAvailable ? "In stock" : "Out of stock – raw materials are being restocked")
+            </p>
+
+            <h2 class="ingredients-title">Ingredients</h2>
+            <ul class="ingredients">
+                @foreach (var item in Model.Ingredients)
+                {
+                    <li>
+                        @item.MaterialName
+                        @if (item.IsAllergen)
+                        {
+                            <span class="badge badge-allergen">Allergen</span>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</section>

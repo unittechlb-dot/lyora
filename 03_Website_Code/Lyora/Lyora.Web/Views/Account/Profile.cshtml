@@ -1,0 +1,57 @@
+@model ProfileViewModel
+@{
+    ViewData["Title"] = "My account";
+}
+
+<section class="container section">
+    <div class="form-card form-card-wide">
+        <span class="eyebrow">My account</span>
+        <h1>My profile</h1>
+        <p class="muted">Signed in as <strong>@Model.Email</strong></p>
+
+        <form method="post" asp-action="Profile" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-error"></div>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label asp-for="FullName"></label>
+                    <input asp-for="FullName" autocomplete="name" />
+                    <span asp-validation-for="FullName" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Phone"></label>
+                    <input asp-for="Phone" autocomplete="tel" />
+                    <span asp-validation-for="Phone" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="DateOfBirth"></label>
+                    <input asp-for="DateOfBirth" />
+                    <span asp-validation-for="DateOfBirth" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Gender"></label>
+                    <select asp-for="Gender">
+                        <option value="">Prefer not to say</option>
+                        <option value="Female">Female</option>
+                        <option value="Male">Male</option>
+                    </select>
+                    <span asp-validation-for="Gender" class="field-error"></span>
+                </div>
+                <div class="field field-full">
+                    <label asp-for="Address"></label>
+                    <input asp-for="Address" autocomplete="street-address" />
+                    <span asp-validation-for="Address" class="field-error"></span>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-dark">Save changes</button>
+                <a class="btn btn-outline" asp-action="ChangePassword">Change password</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

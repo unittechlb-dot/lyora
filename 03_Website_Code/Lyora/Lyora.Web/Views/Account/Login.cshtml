@@ -1,0 +1,40 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<section class="container section">
+    <div class="form-card">
+        <span class="eyebrow">Welcome back</span>
+        <h1>Login</h1>
+
+        <form method="post" asp-action="Login" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-error"></div>
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div class="field">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" autocomplete="email" autofocus />
+                <span asp-validation-for="Email" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Password"></label>
+                <input asp-for="Password" autocomplete="current-password" />
+                <span asp-validation-for="Password" class="field-error"></span>
+            </div>
+
+            <label class="check">
+                <input asp-for="RememberMe" /> <span>Remember me</span>
+            </label>
+
+            <button type="submit" class="btn btn-dark btn-block">Login</button>
+        </form>
+
+        <p class="form-footer">New to LYORA? <a class="link" asp-action="Register">Create an account</a></p>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

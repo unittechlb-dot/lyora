@@ -1,0 +1,21 @@
+@model Perfume
+
+<a class="perfume-card" asp-controller="Perfumes" asp-action="Details" asp-route-id="@Model.PerfumeId">
+    <div class="perfume-image">
+        <img src="@Format.Image(Model.ImageUrl)" alt="@Model.Name" loading="lazy" />
+        @if (!Model.IsAvailable)
+        {
+            <span class="badge badge-out">Out of stock</span>
+        }
+    </div>
+    <div class="perfume-info">
+        <span class="eyebrow">@Model.CategoryName</span>
+        <h3>@Model.Name</h3>
+        <div class="tags">
+            <span class="tag">@Model.Intensity</span>
+            <span class="tag">@Model.Style</span>
+            <span class="tag">@Model.SizeMl ml</span>
+        </div>
+        <span class="price">@Format.Money(Model.Price)</span>
+    </div>
+</a>
