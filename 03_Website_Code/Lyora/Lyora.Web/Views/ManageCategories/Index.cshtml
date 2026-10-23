@@ -1,0 +1,53 @@
+@model CategoryFormViewModel
+@{
+    ViewData["Title"] = "Perfume families";
+    var categories = (List<Category>)ViewBag.Categories;
+}
+
+<section class="container section">
+    <partial name="_AdminNav" />
+    <div class="page-title">
+        <span class="eyebrow">Administrator</span>
+        <h1>Perfume families</h1>
+    </div>
+
+    <div class="admin-columns">
+        <div class="panel">
+            <table class="table">
+                <thead><tr><th></th><th>Family</th><th>Description</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var c in categories)
+                    {
+                        <tr>
+                            <td><img class="table-icon" src="@Format.FamilyImage(c.Name)" alt="" /></td>
+                            <td><strong>@c.Name</strong></td>
+                            <td class="muted">@c.Description</td>
+                            <td class="num"><a class="link" asp-action="Edit" asp-route-id="@c.CategoryId">Edit →</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <form class="panel" method="post" asp-action="Save" novalidate>
+            <h2>Add a family</h2>
+            <div asp-validation-summary="ModelOnly" class="alert alert-error"></div>
+            <input type="hidden" asp-for="CategoryId" />
+            <div class="field">
+                <label asp-for="Name"></label>
+                <input asp-for="Name" />
+                <span asp-validation-for="Name" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Description"></label>
+                <input asp-for="Description" />
+                <span asp-validation-for="Description" class="field-error"></span>
+            </div>
+            <button type="submit" class="btn btn-gold">Add family</button>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

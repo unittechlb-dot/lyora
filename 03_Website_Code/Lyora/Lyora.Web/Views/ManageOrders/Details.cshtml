@@ -1,0 +1,78 @@
+@model Order
+@{
+    ViewData["Title"] = $"Order #{Model.OrderId}";
+}
+
+<section class="container section">
+    <partial name="_AdminNav" />
+    <a class="link back-link" asp-action="Index">← All orders</a>
+    <div class="page-title title-row">
+        <div>
+            <span class="eyebrow">Placed on @Format.Date(Model.OrderDate)</span>
+            <h1>Order #@Model.OrderId</h1>
+        </div>
+        <span class="status status-@Model.Status.ToString().ToLowerInvariant() status-big">@Format.Status(Model.Status)</span>
+    </div>
+
+    <div class="cart-layout">
+        <div>
+            <div class="panel">
+                <h2>Perfumes</h2>
+                @foreach (var item in Model.Items)
+                {
+                    <div class="order-line">
+                        <img src="@Format.Image(item.ImageUrl)" alt="@item.PerfumeName" />
+                        <div>
+                            <strong>@item.PerfumeName</strong>
+                            <span class="muted">@item.Quantity × @Format.Money(item.UnitPrice)</span>
+                        </div>
+                        <span class="cart-subtotal">@Format.Money(item.Subtotal)</span>
+                    </div>
+                }
+                <div class="summary-row summary-total"><span>Total</span><span>@Format.Money(Model.TotalAmount)</span></div>
+            </div>
+
+            <div class="panel">
+                <h2>Actions</h2>
+                <div class="action-row">
+                    @if (Model.Status == OrderStatus.Pending)
+                    {
+                        <form method="post" asp-action="Deliver" asp-route-id="@Model.OrderId">
+                            <button type="submit" class="btn btn-dark">Mark out for delivery</button>
+                        </form>
+                    }
+                    @if (Model.Status == OrderStatus.OutForDelivery)
+                    {
+                        <form method="post" asp-action="ConfirmPayment" asp-route-id="@Model.OrderId">
+                            <button type="submit" class="btn btn-gold">Confirm cash received · @Format.Money(Model.TotalAmount)</button>
+                        </form>
+                    }
+                    @if (Model.Status is OrderStatus.Pending or OrderStatus.OutForDelivery)
+                    {
+                        <form method="post" asp-action="Cancel" asp-route-id="@Model.OrderId"
+                              onsubmit="return confirm('Cancel order #@Model.OrderId? Its raw materials will be returned to the stock.');">
+                            <button type="submit" class="btn btn-danger">Cancel order</button>
+                        </form>
+                    }
+                    @if (Model.Status is OrderStatus.DeliveredPaid or OrderStatus.Cancelled)
+                    {
+                        <p class="muted">This order is closed – no more actions.</p>
+                    }
+                </div>
+                @if (Model.Status is OrderStatus.Pending or OrderStatus.OutForDelivery)
+                {
+                    <p class="muted small">Cancelling gives back to the stock exactly the raw materials that were deducted for this order (BOM).</p>
+                }
+            </div>
+        </div>
+
+        <aside class="summary panel">
+            <h2>Customer</h2>
+            <p><strong>@Model.CustomerName</strong><br /><span class="muted small">@Model.CustomerEmail @(Model.CustomerPhone == null ? "" : "· " + Model.CustomerPhone)</span></p>
+            <div class="summary-row"><span>Delivery address</span></div>
+            <p class="muted small">@Model.DeliveryAddress</p>
+            <div class="summary-row"><span>Payment</span><span>@Model.PaymentMethod</span></div>
+            <div class="summary-row"><span>Cash received</span><span>@(Model.IsPaid ? $"Yes – {Format.Date(Model.PaidAt!.Value)}" : "No")</span></div>
+        </aside>
+    </div>
+</section>

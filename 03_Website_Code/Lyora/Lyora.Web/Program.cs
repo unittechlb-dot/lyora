@@ -1,7 +1,9 @@
 using Lyora.BLL.Services;
 using Lyora.DAL;
 using Lyora.DAL.Repositories;
+using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +33,7 @@ builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<DashboardRepository>();
 builder.Services.AddScoped<CartRepository>();
 builder.Services.AddScoped<OrderRepository>();
+builder.Services.AddScoped<RawMaterialRepository>();
 
 // ---- Business Logic Layer ----
 builder.Services.AddScoped<PerfumeService>();
@@ -38,6 +41,9 @@ builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<InventoryService>();
+builder.Services.AddScoped<AdminOrderService>();
 
 var app = builder.Build();
 
@@ -46,6 +52,15 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+// Numbers and dates always use the same format (1.5 – not 1,5), whatever the Windows language of the laptop.
+var english = new CultureInfo("en-US");
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(english),
+    SupportedCultures = new[] { english },
+    SupportedUICultures = new[] { english }
+});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

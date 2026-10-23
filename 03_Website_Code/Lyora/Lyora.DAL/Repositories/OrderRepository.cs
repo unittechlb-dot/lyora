@@ -123,6 +123,107 @@ public class OrderRepository
         return order;
     }
 
+    // ---------- Administrator (Manage Orders & Confirm Cash Payment) ----------
+
+    // Error numbers thrown by the order procedures (see 03_Procedures_and_Views.sql)
+    public const int NotPending = 50010;
+    public const int NotOutForDelivery = 50011;
+    public const int CannotCancel = 50012;
+
+    private const string SelectAdminOrder = @"
+        SELECT o.OrderId, o.CustomerId, o.OrderDate, o.Status, o.DeliveryAddress, o.TotalAmount,
+               (SELECT ISNULL(SUM(Quantity), 0) FROM dbo.OrderItems WHERE OrderId = o.OrderId) AS Bottles,
+               p.Method, p.IsReceived, p.ReceivedAt,
+               u.FullName, u.Email, u.Phone
+        FROM dbo.Orders o
+        JOIN dbo.Users u         ON u.UserId = o.CustomerId
+        LEFT JOIN dbo.Payments p ON p.OrderId = o.OrderId";
+
+    public List<Order> GetAllOrders(OrderStatus? status)
+    {
+        using var connection = _db.Open();
+        using var command = new SqlCommand(SelectAdminOrder + @"
+        WHERE (@Status IS NULL OR o.Status = @Status)
+        ORDER BY CASE o.Status WHEN N'Pending' THEN 0 WHEN N'OutForDelivery' THEN 1 ELSE 2 END, o.OrderDate DESC;", connection);
+        command.Parameters.AddWithValue("@Status", (object?)status?.ToString() ?? DBNull.Value);
+
+        var orders = new List<Order>();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            orders.Add(ReadAdminOrder(reader));
+        }
+        return orders;
+    }
+
+    public Order? GetOrder(int orderId)
+    {
+        using var connection = _db.Open();
+        using var command = new SqlCommand(SelectAdminOrder + @" WHERE o.OrderId = @OrderId;
+
+        SELECT oi.OrderItemId, oi.PerfumeId, pf.Name, pf.ImageUrl, oi.Quantity, oi.UnitPrice
+        FROM dbo.OrderItems oi
+        JOIN dbo.Perfumes pf ON pf.PerfumeId = oi.PerfumeId
+        WHERE oi.OrderId = @OrderId
+        ORDER BY oi.OrderItemId;", connection);
+        command.Parameters.AddWithValue("@OrderId", orderId);
+        using var reader = command.ExecuteReader();
+
+        if (!reader.Read())
+        {
+            return null;
+        }
+        var order = ReadAdminOrder(reader);
+        reader.NextResult();
+        while (reader.Read())
+        {
+            order.Items.Add(new OrderItem
+            {
+                OrderItemId = reader.GetInt32(0),
+                PerfumeId = reader.GetInt32(1),
+                PerfumeName = reader.GetString(2),
+                ImageUrl = reader.IsDBNull(3) ? null : reader.GetString(3),
+                Quantity = reader.GetInt32(4),
+                UnitPrice = reader.GetDecimal(5)
+            });
+        }
+        return order;
+    }
+
+    /// <summary>Pending → Out for delivery (sp_MarkOutForDelivery). Returns null on success, else the error number.</summary>
+    public int? MarkOutForDelivery(int orderId) => RunOrderProcedure("dbo.sp_MarkOutForDelivery", orderId);
+
+    /// <summary>Cash received → Delivered &amp; paid (sp_ConfirmCashPayment).</summary>
+    public int? ConfirmCashPayment(int orderId) => RunOrderProcedure("dbo.sp_ConfirmCashPayment", orderId);
+
+    /// <summary>Cancels the order and gives the raw materials back to the stock (sp_CancelOrder).</summary>
+    public int? Cancel(int orderId) => RunOrderProcedure("dbo.sp_CancelOrder", orderId);
+
+    private int? RunOrderProcedure(string procedure, int orderId)
+    {
+        using var connection = _db.Open();
+        using var command = new SqlCommand(procedure, connection) { CommandType = CommandType.StoredProcedure };
+        command.Parameters.AddWithValue("@OrderId", orderId);
+        try
+        {
+            command.ExecuteNonQuery();
+            return null;
+        }
+        catch (SqlException ex) when (ex.Number is NotPending or NotOutForDelivery or CannotCancel)
+        {
+            return ex.Number;
+        }
+    }
+
+    private static Order ReadAdminOrder(SqlDataReader reader)
+    {
+        var order = ReadOrder(reader);
+        order.CustomerName = reader.GetString(10);
+        order.CustomerEmail = reader.GetString(11);
+        order.CustomerPhone = reader.IsDBNull(12) ? null : reader.GetString(12);
+        return order;
+    }
+
     private static Order ReadOrder(SqlDataReader reader) => new()
     {
         OrderId = reader.GetInt32(0),

@@ -1,0 +1,49 @@
+@model ManageOrdersViewModel
+@{
+    ViewData["Title"] = "Manage orders";
+}
+
+<section class="container section">
+    <partial name="_AdminNav" />
+    <div class="page-title">
+        <span class="eyebrow">Administrator</span>
+        <h1>Orders</h1>
+    </div>
+
+    <div class="chips">
+        <a class="chip @(Model.Status == null ? "active" : "")" asp-action="Index">All</a>
+        @foreach (var s in Enum.GetValues<OrderStatus>())
+        {
+            <a class="chip @(Model.Status == s ? "active" : "")" asp-action="Index" asp-route-status="@s">@Format.Status(s)</a>
+        }
+    </div>
+
+    <div class="panel">
+        @if (Model.Orders.Count == 0)
+        {
+            <p class="muted">No orders.</p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr><th>Order</th><th>Date</th><th>Customer</th><th>Bottles</th><th>Status</th><th class="num">Total</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var o in Model.Orders)
+                    {
+                        <tr>
+                            <td><strong>#@o.OrderId</strong></td>
+                            <td>@Format.Date(o.OrderDate)</td>
+                            <td>@o.CustomerName</td>
+                            <td>@o.Bottles</td>
+                            <td><span class="status status-@o.Status.ToString().ToLowerInvariant()">@Format.Status(o.Status)</span></td>
+                            <td class="num">@Format.Money(o.TotalAmount)</td>
+                            <td class="num"><a class="link" asp-action="Details" asp-route-id="@o.OrderId">Manage →</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</section>

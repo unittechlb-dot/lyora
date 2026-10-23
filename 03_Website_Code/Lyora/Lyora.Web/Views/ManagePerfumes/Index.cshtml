@@ -1,0 +1,38 @@
+@model List<Perfume>
+@{
+    ViewData["Title"] = "Manage perfumes";
+}
+
+<section class="container section">
+    <partial name="_AdminNav" />
+    <div class="page-title title-row">
+        <div>
+            <span class="eyebrow">Administrator</span>
+            <h1>Perfumes &amp; BOM</h1>
+        </div>
+        <a class="btn btn-gold" asp-action="Create">+ New perfume</a>
+    </div>
+
+    <div class="panel">
+        <table class="table">
+            <thead>
+                <tr><th></th><th>Perfume</th><th>Family</th><th>Size</th><th class="num">Price</th><th class="num">Can produce</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr class="@(p.IsActive ? "" : "row-muted")">
+                        <td><img class="table-thumb" src="@Format.Image(p.ImageUrl)" alt="" /></td>
+                        <td><strong>@p.Name</strong></td>
+                        <td>@p.CategoryName</td>
+                        <td>@p.SizeMl ml</td>
+                        <td class="num">@Format.Money(p.Price)</td>
+                        <td class="num @(p.ProducibleBottles == 0 ? "low" : "")">@p.ProducibleBottles bottles</td>
+                        <td>@(p.IsActive ? "Visible" : "Hidden")</td>
+                        <td class="num"><a class="link" asp-action="Edit" asp-route-id="@p.PerfumeId">Edit &amp; BOM →</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

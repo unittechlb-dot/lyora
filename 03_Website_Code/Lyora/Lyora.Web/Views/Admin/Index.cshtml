@@ -4,6 +4,7 @@
 }
 
 <section class="container section">
+    <partial name="_AdminNav" />
     <div class="page-title">
         <span class="eyebrow">Administrator</span>
         <h1>Dashboard</h1>
@@ -19,10 +20,10 @@
             <span class="stat-label">Customers</span>
             <span class="stat-value">@Model.Customers</span>
         </div>
-        <div class="stat">
+        <a class="stat" asp-controller="ManageOrders" asp-action="Index">
             <span class="stat-label">Open orders</span>
             <span class="stat-value">@Model.OpenOrders</span>
-        </div>
+        </a>
         <div class="stat @(Model.LowStockMaterials.Count > 0 ? "stat-alert" : "")">
             <span class="stat-label">Low-stock materials</span>
             <span class="stat-value">@Model.LowStockMaterials.Count</span>
@@ -45,7 +46,7 @@
                     @foreach (var m in Model.LowStockMaterials)
                     {
                         <tr>
-                            <td>@m.Name</td>
+                            <td><a class="link" asp-controller="ManageMaterials" asp-action="Details" asp-route-id="@m.MaterialId">@m.Name</a></td>
                             <td class="num low">@m.QuantityInStock.ToString("0.##") @m.Unit</td>
                             <td class="num">@m.Threshold.ToString("0.##") @m.Unit</td>
                         </tr>
@@ -55,6 +56,5 @@
         }
     </div>
 
-    <p class="muted">Product, BOM, inventory and order management are added in Part 4.</p>
     <a class="link" asp-controller="Account" asp-action="ChangePassword">Change my password</a>
 </section>

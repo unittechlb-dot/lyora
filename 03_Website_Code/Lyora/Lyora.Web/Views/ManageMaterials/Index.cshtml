@@ -1,0 +1,41 @@
+@model List<RawMaterial>
+@{
+    ViewData["Title"] = "Raw materials";
+}
+
+<section class="container section">
+    <partial name="_AdminNav" />
+    <div class="page-title title-row">
+        <div>
+            <span class="eyebrow">Inventory</span>
+            <h1>Raw materials</h1>
+        </div>
+        <a class="btn btn-gold" asp-action="Create">+ New raw material</a>
+    </div>
+
+    <div class="panel">
+        <table class="table">
+            <thead>
+                <tr><th>Raw material</th><th class="num">In stock</th><th class="num">Threshold</th><th>Level</th><th class="num">Cost / unit</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var m in Model)
+                {
+                    var percent = m.Threshold == 0 ? 100 : (int)Math.Min(100, m.QuantityInStock / (m.Threshold * 3) * 100);
+                    <tr>
+                        <td>
+                            <strong>@m.Name</strong>
+                            @if (m.IsAllergen) { <span class="badge badge-allergen">Allergen</span> }
+                            @if (m.IsBelowThreshold) { <span class="badge badge-low">Low stock</span> }
+                        </td>
+                        <td class="num @(m.IsBelowThreshold ? "low" : "")">@m.QuantityInStock.ToString("#,0.##") @m.Unit</td>
+                        <td class="num">@m.Threshold.ToString("#,0.##") @m.Unit</td>
+                        <td><div class="meter"><span class="@(m.IsBelowThreshold ? "meter-low" : "")" style="width:@percent%"></span></div></td>
+                        <td class="num">@Format.Money(m.CostPerUnit)</td>
+                        <td class="num"><a class="link" asp-action="Details" asp-route-id="@m.MaterialId">Restock / history →</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

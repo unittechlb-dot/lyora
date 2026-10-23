@@ -98,6 +98,94 @@ public class PerfumeRepository
         return items;
     }
 
+    // ---------- Administrator (Manage Products & Manage BOM) ----------
+
+    /// <summary>All perfumes, including hidden ones.</summary>
+    public List<Perfume> GetAllForAdmin()
+    {
+        using var connection = _db.Open();
+        using var command = new SqlCommand(SelectPerfume + " ORDER BY p.IsActive DESC, p.Name;", connection);
+        return ReadPerfumes(command);
+    }
+
+    public bool NameExists(string name, int? exceptPerfumeId = null)
+    {
+        using var connection = _db.Open();
+        using var command = new SqlCommand(
+            "SELECT COUNT(*) FROM dbo.Perfumes WHERE Name = @Name AND (@Except IS NULL OR PerfumeId <> @Except);", connection);
+        command.Parameters.AddWithValue("@Name", name);
+        command.Parameters.AddWithValue("@Except", (object?)exceptPerfumeId ?? DBNull.Value);
+        return Convert.ToInt32(command.ExecuteScalar()) > 0;
+    }
+
+    public int Create(Perfume perfume)
+    {
+        const string sql = @"
+        INSERT INTO dbo.Perfumes (CategoryId, Name, Description, Price, SizeMl, Intensity, Style, ImageUrl, IsActive)
+        VALUES (@CategoryId, @Name, @Description, @Price, @SizeMl, @Intensity, @Style, @ImageUrl, @IsActive);
+        SELECT CAST(SCOPE_IDENTITY() AS INT);";
+
+        using var connection = _db.Open();
+        using var command = new SqlCommand(sql, connection);
+        AddPerfumeParameters(command, perfume);
+        return Convert.ToInt32(command.ExecuteScalar());
+    }
+
+    public void Update(Perfume perfume)
+    {
+        const string sql = @"
+        UPDATE dbo.Perfumes
+        SET CategoryId = @CategoryId, Name = @Name, Description = @Description, Price = @Price, SizeMl = @SizeMl,
+            Intensity = @Intensity, Style = @Style, ImageUrl = @ImageUrl, IsActive = @IsActive
+        WHERE PerfumeId = @PerfumeId;";
+
+        using var connection = _db.Open();
+        using var command = new SqlCommand(sql, connection);
+        AddPerfumeParameters(command, perfume);
+        command.Parameters.AddWithValue("@PerfumeId", perfume.PerfumeId);
+        command.ExecuteNonQuery();
+    }
+
+    /// <summary>Adds a raw material to the formula, or changes its quantity if it is already there.</summary>
+    public void SaveBomLine(int perfumeId, int materialId, decimal quantityPerBottle)
+    {
+        const string sql = @"
+        UPDATE dbo.BOMItems SET QuantityPerBottle = @Quantity
+        WHERE PerfumeId = @PerfumeId AND MaterialId = @MaterialId;
+
+        IF @@ROWCOUNT = 0
+            INSERT INTO dbo.BOMItems (PerfumeId, MaterialId, QuantityPerBottle) VALUES (@PerfumeId, @MaterialId, @Quantity);";
+
+        using var connection = _db.Open();
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@PerfumeId", perfumeId);
+        command.Parameters.AddWithValue("@MaterialId", materialId);
+        command.Parameters.AddWithValue("@Quantity", quantityPerBottle);
+        command.ExecuteNonQuery();
+    }
+
+    public void RemoveBomLine(int perfumeId, int bomItemId)
+    {
+        using var connection = _db.Open();
+        using var command = new SqlCommand("DELETE FROM dbo.BOMItems WHERE BomItemId = @BomItemId AND PerfumeId = @PerfumeId;", connection);
+        command.Parameters.AddWithValue("@PerfumeId", perfumeId);
+        command.Parameters.AddWithValue("@BomItemId", bomItemId);
+        command.ExecuteNonQuery();
+    }
+
+    private static void AddPerfumeParameters(SqlCommand command, Perfume perfume)
+    {
+        command.Parameters.AddWithValue("@CategoryId", perfume.CategoryId);
+        command.Parameters.AddWithValue("@Name", perfume.Name);
+        command.Parameters.AddWithValue("@Description", (object?)perfume.Description ?? DBNull.Value);
+        command.Parameters.AddWithValue("@Price", perfume.Price);
+        command.Parameters.AddWithValue("@SizeMl", perfume.SizeMl);
+        command.Parameters.AddWithValue("@Intensity", perfume.Intensity.ToString());
+        command.Parameters.AddWithValue("@Style", perfume.Style.ToString());
+        command.Parameters.AddWithValue("@ImageUrl", (object?)perfume.ImageUrl ?? DBNull.Value);
+        command.Parameters.AddWithValue("@IsActive", perfume.IsActive);
+    }
+
     private static List<Perfume> ReadPerfumes(SqlCommand command)
     {
         var perfumes = new List<Perfume>();

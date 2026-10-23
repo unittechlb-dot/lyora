@@ -22,3 +22,10 @@ public enum OrderStatus
     DeliveredPaid,
     Cancelled
 }
+
+public enum TransactionType
+{
+    Sale,
+    Restock,
+    CancelReturn
+}

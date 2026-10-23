@@ -1,0 +1,11 @@
+@{
+    var current = ViewContext.RouteData.Values["controller"]?.ToString();
+    string Active(string controller) => current == controller ? "active" : "";
+}
+<nav class="admin-nav" aria-label="Administrator">
+    <a class="@Active("Admin")" asp-controller="Admin" asp-action="Index">Dashboard</a>
+    <a class="@Active("ManageOrders")" asp-controller="ManageOrders" asp-action="Index">Orders</a>
+    <a class="@Active("ManagePerfumes")" asp-controller="ManagePerfumes" asp-action="Index">Perfumes &amp; BOM</a>
+    <a class="@Active("ManageMaterials")" asp-controller="ManageMaterials" asp-action="Index">Raw materials</a>
+    <a class="@Active("ManageCategories")" asp-controller="ManageCategories" asp-action="Index">Families</a>
+</nav>

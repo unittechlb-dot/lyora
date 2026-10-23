@@ -1,0 +1,57 @@
+@model MaterialFormViewModel
+@{
+    var isNew = Model.MaterialId == 0;
+    ViewData["Title"] = isNew ? "New raw material" : Model.Name;
+}
+
+<section class="container section">
+    <partial name="_AdminNav" />
+    <a class="link back-link" asp-action="Index">← All raw materials</a>
+    <div class="form-card form-card-wide">
+        <span class="eyebrow">Inventory</span>
+        <h1>@(isNew ? "New raw material" : "Edit raw material")</h1>
+
+        <form method="post" asp-action="@(isNew ? "Create" : "Edit")" asp-route-id="@(isNew ? null : Model.MaterialId)" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-error"></div>
+            <div class="form-grid">
+                <div class="field">
+                    <label asp-for="Name"></label>
+                    <input asp-for="Name" />
+                    <span asp-validation-for="Name" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Unit"></label>
+                    <select asp-for="Unit">
+                        @foreach (var u in Lyora.BLL.Services.InventoryService.Units)
+                        {
+                            <option value="@u">@u</option>
+                        }
+                    </select>
+                </div>
+                <div class="field">
+                    <label asp-for="Threshold"></label>
+                    <input asp-for="Threshold" type="number" step="0.01" min="0" />
+                    <span class="hint">An alert is sent when the stock goes below this (e.g. 1000 ml = 1 liter).</span>
+                    <span asp-validation-for="Threshold" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="CostPerUnit"></label>
+                    <input asp-for="CostPerUnit" type="number" step="0.0001" min="0" />
+                    <span asp-validation-for="CostPerUnit" class="field-error"></span>
+                </div>
+            </div>
+            <label class="check">
+                <input asp-for="IsAllergen" /> <span>Allergen – customers can be allergic to it</span>
+            </label>
+            @if (isNew)
+            {
+                <p class="muted small">A new raw material starts with 0 in stock. Use <strong>Restock</strong> to add the first quantity, so every movement is saved in the history.</p>
+            }
+            <button type="submit" class="btn btn-dark">@(isNew ? "Add raw material" : "Save")</button>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

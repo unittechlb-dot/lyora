@@ -1,0 +1,132 @@
+@model PerfumeFormViewModel
+@{
+    var isNew = Model.PerfumeId == 0;
+    ViewData["Title"] = isNew ? "New perfume" : Model.Name;
+}
+
+<section class="container section">
+    <partial name="_AdminNav" />
+    <a class="link back-link" asp-action="Index">← All perfumes</a>
+    <div class="page-title">
+        <span class="eyebrow">@(isNew ? "New perfume" : "Edit perfume")</span>
+        <h1>@(isNew ? "Add a perfume" : Model.Name)</h1>
+    </div>
+
+    <div class="admin-columns">
+        <form class="panel" method="post" asp-action="@(isNew ? "Create" : "Edit")" asp-route-id="@(isNew ? null : Model.PerfumeId)" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-error"></div>
+            <h2>Details</h2>
+            <div class="form-grid">
+                <div class="field field-full">
+                    <label asp-for="Name"></label>
+                    <input asp-for="Name" />
+                    <span asp-validation-for="Name" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="CategoryId"></label>
+                    <select asp-for="CategoryId">
+                        <option value="0">Choose…</option>
+                        @foreach (var c in Model.Categories)
+                        {
+                            <option value="@c.CategoryId">@c.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="CategoryId" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Price"></label>
+                    <input asp-for="Price" type="number" step="0.01" min="1" />
+                    <span asp-validation-for="Price" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="SizeMl"></label>
+                    <input asp-for="SizeMl" type="number" min="5" max="1000" />
+                    <span asp-validation-for="SizeMl" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="ImageUrl"></label>
+                    <select asp-for="ImageUrl">
+                        <option value="">No image (placeholder)</option>
+                        @foreach (var img in Model.Images)
+                        {
+                            <option value="@img">@img.Replace("/images/", "")</option>
+                        }
+                    </select>
+                </div>
+                <div class="field">
+                    <label asp-for="Intensity"></label>
+                    <select asp-for="Intensity" asp-items="Html.GetEnumSelectList<ScentIntensity>()"></select>
+                </div>
+                <div class="field">
+                    <label asp-for="Style"></label>
+                    <select asp-for="Style" asp-items="Html.GetEnumSelectList<ScentStyle>()"></select>
+                </div>
+                <div class="field field-full">
+                    <label asp-for="Description"></label>
+                    <textarea asp-for="Description" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="field-error"></span>
+                </div>
+            </div>
+            <label class="check">
+                <input asp-for="IsActive" /> <span>Visible on the website</span>
+            </label>
+            <button type="submit" class="btn btn-dark">@(isNew ? "Create perfume" : "Save details")</button>
+        </form>
+
+        @if (!isNew)
+        {
+            <div class="panel">
+                <h2>Formula (BOM) – for one bottle</h2>
+                <p class="muted small">
+                    When a bottle is sold, these quantities are deducted from the raw-material stock.
+                    With the current stock, LYORA can produce <strong class="@(Model.ProducibleBottles == 0 ? "low" : "")">@Model.ProducibleBottles bottles</strong>.
+                </p>
+
+                @if (Model.Bom.Count == 0)
+                {
+                    <div class="alert alert-error">No formula yet – this perfume shows "Out of stock" until you add its raw materials.</div>
+                }
+                else
+                {
+                    <table class="table">
+                        <thead><tr><th>Raw material</th><th class="num">Per bottle</th><th class="num">In stock</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var line in Model.Bom)
+                            {
+                                var stock = Model.Materials.FirstOrDefault(m => m.MaterialId == line.MaterialId);
+                                <tr>
+                                    <td>@line.MaterialName @if (line.IsAllergen) { <span class="badge badge-allergen">Allergen</span> }</td>
+                                    <td class="num">@line.QuantityPerBottle.ToString("0.##") @line.Unit</td>
+                                    <td class="num @(stock?.IsBelowThreshold == true ? "low" : "")">@stock?.QuantityInStock.ToString("0.##") @line.Unit</td>
+                                    <td class="num">
+                                        <form method="post" asp-action="RemoveBomLine" asp-route-id="@Model.PerfumeId">
+                                            <input type="hidden" name="bomItemId" value="@line.BomItemId" />
+                                            <button type="submit" class="icon-button" aria-label="Remove @line.MaterialName">✕</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+                <form class="bom-form" method="post" asp-action="SaveBomLine" asp-route-id="@Model.PerfumeId">
+                    <select name="materialId" aria-label="Raw material" required>
+                        <option value="">Raw material…</option>
+                        @foreach (var m in Model.Materials)
+                        {
+                            <option value="@m.MaterialId">@m.Name (@m.Unit)</option>
+                        }
+                    </select>
+                    <input type="number" name="quantityPerBottle" step="0.01" min="0.01" max="1000" placeholder="Qty per bottle" aria-label="Quantity per bottle" required />
+                    <button type="submit" class="btn btn-gold">Add / update</button>
+                </form>
+                <p class="muted small">Choosing a raw material that is already in the formula changes its quantity.</p>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
