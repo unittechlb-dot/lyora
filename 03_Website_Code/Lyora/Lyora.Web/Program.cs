@@ -29,11 +29,15 @@ builder.Services.AddScoped<CategoryRepository>();
 builder.Services.AddScoped<PerfumeRepository>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<DashboardRepository>();
+builder.Services.AddScoped<CartRepository>();
+builder.Services.AddScoped<OrderRepository>();
 
 // ---- Business Logic Layer ----
 builder.Services.AddScoped<PerfumeService>();
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<DashboardService>();
+builder.Services.AddScoped<CartService>();
+builder.Services.AddScoped<OrderService>();
 
 var app = builder.Build();
 

@@ -14,3 +14,11 @@ public enum ScentStyle
     Bold,
     Simple
 }
+
+public enum OrderStatus
+{
+    Pending,
+    OutForDelivery,
+    DeliveredPaid,
+    Cancelled
+}

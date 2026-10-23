@@ -1,0 +1,51 @@
+@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<section class="container section">
+    <div class="page-title">
+        <span class="eyebrow">Checkout</span>
+        <h1>Confirm your order</h1>
+    </div>
+
+    <div class="cart-layout">
+        <form class="panel" method="post" asp-action="Index" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-error"></div>
+
+            <h2>Delivery</h2>
+            <p class="muted">@Model.FullName @(string.IsNullOrEmpty(Model.Phone) ? "" : "· " + Model.Phone)</p>
+            <div class="field">
+                <label asp-for="DeliveryAddress"></label>
+                <input asp-for="DeliveryAddress" autocomplete="street-address" placeholder="City, street, building, floor" />
+                <span asp-validation-for="DeliveryAddress" class="field-error"></span>
+            </div>
+
+            <h2>Payment</h2>
+            <div class="payment-option">
+                <span class="radio-dot"></span>
+                <div>
+                    <strong>Cash on Delivery</strong>
+                    <p class="muted small">Pay in cash when you receive your perfume. Our administrator confirms the payment after delivery.</p>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-gold btn-block">Place order · @Format.Money(Model.Cart.Total)</button>
+        </form>
+
+        <aside class="summary panel">
+            <h2>Your order</h2>
+            @foreach (var item in Model.Cart.Items)
+            {
+                <div class="summary-row"><span>@item.Quantity × @item.PerfumeName</span><span>@Format.Money(item.Subtotal)</span></div>
+            }
+            <div class="summary-row"><span>Delivery</span><span>Free</span></div>
+            <div class="summary-row summary-total"><span>Total</span><span>@Format.Money(Model.Cart.Total)</span></div>
+            <a class="link continue" asp-controller="Cart" asp-action="Index">← Back to cart</a>
+        </aside>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

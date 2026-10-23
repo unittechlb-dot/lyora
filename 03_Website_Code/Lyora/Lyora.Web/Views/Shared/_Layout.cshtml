@@ -28,6 +28,12 @@
                 <div class="alert alert-success" role="status">@success</div>
             </div>
         }
+        @if (TempData["Error"] is string error)
+        {
+            <div class="container">
+                <div class="alert alert-error" role="alert">@error</div>
+            </div>
+        }
         @RenderBody()
     </main>
 

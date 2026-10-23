@@ -6,6 +6,7 @@
 /02_Database/*
 !/02_Database/*.sql
 /03_Website_Code/*.docx
+/03_Website_Code/*.pdf
 
 # Visual Studio / .NET build output
 bin/

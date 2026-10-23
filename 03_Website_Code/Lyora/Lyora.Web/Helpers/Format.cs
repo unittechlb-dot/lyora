@@ -1,4 +1,5 @@
 using System.Globalization;
+using Lyora.DAL.Entities;
 
 namespace Lyora.Web.Helpers;
 
@@ -9,6 +10,17 @@ public static class Format
 
     /// <summary>Image of a perfume, or a placeholder when it has none.</summary>
     public static string Image(string? url) => string.IsNullOrWhiteSpace(url) ? "/images/perfume-placeholder.svg" : url;
+
+    public static string Status(OrderStatus status) => status switch
+    {
+        OrderStatus.Pending => "Pending",
+        OrderStatus.OutForDelivery => "Out for delivery",
+        OrderStatus.DeliveredPaid => "Delivered & paid",
+        OrderStatus.Cancelled => "Cancelled",
+        _ => status.ToString()
+    };
+
+    public static string Date(DateTime date) => date.ToString("dd MMM yyyy, HH:mm", CultureInfo.InvariantCulture);
 
     private static readonly HashSet<string> Families = new(StringComparer.OrdinalIgnoreCase) { "floral", "woody", "oriental", "fresh" };
 

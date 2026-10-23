@@ -1,0 +1,57 @@
+@model Order
+@{
+    ViewData["Title"] = $"Order #{Model.OrderId}";
+    var steps = new[] { OrderStatus.Pending, OrderStatus.OutForDelivery, OrderStatus.DeliveredPaid };
+    var current = Array.IndexOf(steps, Model.Status);
+}
+
+<section class="container section">
+    <a class="link back-link" asp-action="Index">← My orders</a>
+    <div class="page-title">
+        <span class="eyebrow">Placed on @Format.Date(Model.OrderDate)</span>
+        <h1>Order #@Model.OrderId</h1>
+    </div>
+
+    @if (Model.Status == OrderStatus.Cancelled)
+    {
+        <div class="alert alert-error">This order was cancelled.</div>
+    }
+    else
+    {
+        <ol class="timeline">
+            @for (var i = 0; i < steps.Length; i++)
+            {
+                <li class="@(i <= current ? "done" : "")">
+                    <span class="dot">@(i < current || (i == current && i == steps.Length - 1) ? "✓" : (i + 1).ToString())</span>
+                    <span>@Format.Status(steps[i])</span>
+                </li>
+            }
+        </ol>
+    }
+
+    <div class="cart-layout">
+        <div class="panel">
+            <h2>Perfumes</h2>
+            @foreach (var item in Model.Items)
+            {
+                <div class="order-line">
+                    <img src="@Format.Image(item.ImageUrl)" alt="@item.PerfumeName" />
+                    <div>
+                        <strong>@item.PerfumeName</strong>
+                        <span class="muted">@item.Quantity × @Format.Money(item.UnitPrice)</span>
+                    </div>
+                    <span class="cart-subtotal">@Format.Money(item.Subtotal)</span>
+                </div>
+            }
+        </div>
+
+        <aside class="summary panel">
+            <h2>Summary</h2>
+            <div class="summary-row"><span>Delivery address</span></div>
+            <p class="muted small">@Model.DeliveryAddress</p>
+            <div class="summary-row"><span>Payment</span><span>@Model.PaymentMethod</span></div>
+            <div class="summary-row"><span>Paid</span><span>@(Model.IsPaid ? "Yes" : "On delivery")</span></div>
+            <div class="summary-row summary-total"><span>Total</span><span>@Format.Money(Model.TotalAmount)</span></div>
+        </aside>
+    </div>
+</section>

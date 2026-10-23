@@ -27,6 +27,30 @@
                 @(p.IsAvailable ? "In stock" : "Out of stock – raw materials are being restocked")
             </p>
 
+            @if (p.IsAvailable)
+            {
+                @if (User.IsInRole(Roles.Customer))
+                {
+                    var max = Math.Min(Lyora.BLL.Services.CartService.MaxBottlesPerPerfume, p.ProducibleBottles);
+                    <form class="add-to-cart" method="post" asp-controller="Cart" asp-action="Add">
+                        <input type="hidden" name="perfumeId" value="@p.PerfumeId" />
+                        <label for="quantity" class="sr-only">Quantity</label>
+                        <select id="quantity" name="quantity">
+                            @for (var q = 1; q <= max; q++)
+                            {
+                                <option value="@q">@q</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-gold">Add to cart</button>
+                    </form>
+                }
+                else if (User.Identity?.IsAuthenticated != true)
+                {
+                    <a class="btn btn-dark add-to-cart-login" asp-controller="Account" asp-action="Login"
+                       asp-route-returnUrl="@Url.Action("Details", "Perfumes", new { id = p.PerfumeId })">Login to order</a>
+                }
+            }
+
             <h2 class="ingredients-title">Ingredients</h2>
             <ul class="ingredients">
                 @foreach (var item in Model.Ingredients)

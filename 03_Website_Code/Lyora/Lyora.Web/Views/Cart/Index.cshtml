@@ -1,0 +1,84 @@
+@model CartViewModel
+@{
+    ViewData["Title"] = "Cart";
+    var cart = Model.Cart;
+}
+
+<section class="container section">
+    <div class="page-title">
+        <span class="eyebrow">Shopping cart</span>
+        <h1>Your cart</h1>
+    </div>
+
+    @if (cart.IsEmpty)
+    {
+        <div class="empty panel">
+            <h3>Your cart is empty.</h3>
+            <p>Discover our perfumes and add your favourites.</p>
+            <a class="btn btn-gold" asp-controller="Perfumes" asp-action="Index">Explore perfumes</a>
+        </div>
+    }
+    else
+    {
+        @if (Model.Problem != null)
+        {
+            <div class="alert alert-error" role="alert">@Model.Problem</div>
+        }
+
+        <div class="cart-layout">
+            <div class="cart-lines">
+                @foreach (var item in cart.Items)
+                {
+                    <div class="cart-line @(item.IsAvailable ? "" : "cart-line-problem")">
+                        <a class="cart-thumb" asp-controller="Perfumes" asp-action="Details" asp-route-id="@item.PerfumeId">
+                            <img src="@Format.Image(item.ImageUrl)" alt="@item.PerfumeName" />
+                        </a>
+                        <div class="cart-info">
+                            <a asp-controller="Perfumes" asp-action="Details" asp-route-id="@item.PerfumeId"><h3>@item.PerfumeName</h3></a>
+                            <span class="muted">@item.SizeMl ml · @Format.Money(item.UnitPrice)</span>
+                            @if (!item.IsAvailable)
+                            {
+                                <span class="line-warning">
+                                    @(item.ProducibleBottles == 0 || !item.IsActive ? "Out of stock" : $"Only {item.ProducibleBottles} available")
+                                </span>
+                            }
+                        </div>
+                        <form class="qty-form" method="post" asp-action="Update">
+                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                            <label class="sr-only" for="qty-@item.CartItemId">Quantity</label>
+                            <select id="qty-@item.CartItemId" name="quantity" onchange="this.form.submit()">
+                                @for (var q = 1; q <= Lyora.BLL.Services.CartService.MaxBottlesPerPerfume; q++)
+                                {
+                                    <option value="@q" selected="@(q == item.Quantity)">@q</option>
+                                }
+                            </select>
+                            <noscript><button type="submit" class="btn btn-outline btn-small">Update</button></noscript>
+                        </form>
+                        <span class="cart-subtotal">@Format.Money(item.Subtotal)</span>
+                        <form method="post" asp-action="Remove">
+                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                            <button type="submit" class="icon-button" aria-label="Remove @item.PerfumeName">✕</button>
+                        </form>
+                    </div>
+                }
+            </div>
+
+            <aside class="summary panel">
+                <h2>Summary</h2>
+                <div class="summary-row"><span>Bottles</span><span>@cart.Bottles</span></div>
+                <div class="summary-row"><span>Delivery</span><span>Free</span></div>
+                <div class="summary-row summary-total"><span>Total</span><span>@Format.Money(cart.Total)</span></div>
+                <p class="muted small">Payment: <strong>Cash on Delivery</strong></p>
+                @if (Model.CanCheckout)
+                {
+                    <a class="btn btn-dark btn-block" asp-controller="Checkout" asp-action="Index">Checkout</a>
+                }
+                else
+                {
+                    <button class="btn btn-dark btn-block" disabled>Checkout</button>
+                }
+                <a class="link continue" asp-controller="Perfumes" asp-action="Index">← Continue shopping</a>
+            </aside>
+        </div>
+    }
+</section>
