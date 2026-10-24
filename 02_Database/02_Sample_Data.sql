@@ -80,28 +80,66 @@ SET IDENTITY_INSERT dbo.Promotions OFF;
 
 INSERT INTO dbo.PromotionPerfumes (PromotionId, PerfumeId) VALUES (1, 1), (1, 2), (2, 4);
 
-/* ---------- Questionnaire (simple preference questions only) ---------- */
+/* ---------- Questionnaire: 8 simple preference questions (no psychological questions) ---------- */
 SET IDENTITY_INSERT dbo.Questions ON;
-INSERT INTO dbo.Questions (QuestionId, Text, Topic) VALUES
- (1, N'Are you allergic to any perfume ingredients?', N'Allergy'),
- (2, N'Do you prefer light or strong scents?',        N'Intensity'),
- (3, N'Which scent style do you like most?',          N'Style');
+INSERT INTO dbo.Questions (QuestionId, Text, Topic, AllowMultiple, SortOrder) VALUES
+ (1, N'Are you allergic to any of these ingredients?', N'Allergy',   1, 1),
+ (2, N'Do you prefer light or strong scents?',          N'Intensity', 0, 2),
+ (3, N'Which scent style do you like most?',            N'Style',     0, 3),
+ (4, N'Which perfume family do you like most?',         N'Family',    0, 4),
+ (5, N'Which notes do you enjoy?',                      N'Notes',     1, 5),
+ (6, N'When will you wear it most?',                    N'Occasion',  0, 6),
+ (7, N'Which bottle size do you prefer?',               N'Size',      0, 7),
+ (8, N'What is your budget?',                           N'Budget',    0, 8);
 SET IDENTITY_INSERT dbo.Questions OFF;
 
-INSERT INTO dbo.AnswerOptions (QuestionId, Text, MapsToIntensity, MapsToStyle) VALUES
- (1, N'No, I have no allergies',                         NULL,      NULL),
- (1, N'Yes, I will select the ingredients',              NULL,      NULL),
- (2, N'Light and soft',                                  N'Light',  NULL),
- (2, N'Strong and long-lasting',                         N'Strong', NULL),
- (3, N'Natural (flowers, fruits)',                       NULL,      N'Natural'),
- (3, N'Bold (oud, spices)',                              NULL,      N'Bold'),
- (3, N'Simple and clean',                                NULL,      N'Simple');
+SET IDENTITY_INSERT dbo.AnswerOptions ON;
+INSERT INTO dbo.AnswerOptions (OptionId, QuestionId, SortOrder, Text, MapsToIntensity, MapsToStyle, MapsToCategoryId, MapsToMaterialId, MapsToSizeMl, MinPrice, MaxPrice) VALUES
+ -- 1. Allergies (excludes every perfume whose BOM contains the material)
+ ( 1, 1, 1, N'No, I have no allergies',          NULL,      NULL,      NULL, NULL, NULL, NULL,   NULL),
+ ( 2, 1, 2, N'Jasmine',                          NULL,      NULL,      NULL, 3,    NULL, NULL,   NULL),
+ ( 3, 1, 3, N'Bergamot (citrus)',                NULL,      NULL,      NULL, 7,    NULL, NULL,   NULL),
+ -- 2. Intensity
+ ( 4, 2, 1, N'Light and soft',                   N'Light',  NULL,      NULL, NULL, NULL, NULL,   NULL),
+ ( 5, 2, 2, N'Strong and long-lasting',          N'Strong', NULL,      NULL, NULL, NULL, NULL,   NULL),
+ -- 3. Style
+ ( 6, 3, 1, N'Natural (flowers, fruits)',        NULL,      N'Natural',NULL, NULL, NULL, NULL,   NULL),
+ ( 7, 3, 2, N'Bold (oud, spices)',               NULL,      N'Bold',   NULL, NULL, NULL, NULL,   NULL),
+ ( 8, 3, 3, N'Simple and clean',                 NULL,      N'Simple', NULL, NULL, NULL, NULL,   NULL),
+ -- 4. Family
+ ( 9, 4, 1, N'Floral',                           NULL,      NULL,      1,    NULL, NULL, NULL,   NULL),
+ (10, 4, 2, N'Woody',                            NULL,      NULL,      2,    NULL, NULL, NULL,   NULL),
+ (11, 4, 3, N'Oriental',                         NULL,      NULL,      3,    NULL, NULL, NULL,   NULL),
+ (12, 4, 4, N'Fresh',                            NULL,      NULL,      4,    NULL, NULL, NULL,   NULL),
+ (13, 4, 5, N'No preference',                    NULL,      NULL,      NULL, NULL, NULL, NULL,   NULL),
+ -- 5. Liked notes (extra points when the perfume's BOM contains the material)
+ (14, 5, 1, N'Rose',                             NULL,      NULL,      NULL, 2,    NULL, NULL,   NULL),
+ (15, 5, 2, N'Jasmine',                          NULL,      NULL,      NULL, 3,    NULL, NULL,   NULL),
+ (16, 5, 3, N'Sandalwood',                       NULL,      NULL,      NULL, 4,    NULL, NULL,   NULL),
+ (17, 5, 4, N'Oud',                              NULL,      NULL,      NULL, 5,    NULL, NULL,   NULL),
+ (18, 5, 5, N'Vanilla',                          NULL,      NULL,      NULL, 6,    NULL, NULL,   NULL),
+ (19, 5, 6, N'Bergamot (citrus)',                NULL,      NULL,      NULL, 7,    NULL, NULL,   NULL),
+ -- 6. Occasion (daytime = light, evening = strong)
+ (20, 6, 1, N'Daytime',                          N'Light',  NULL,      NULL, NULL, NULL, NULL,   NULL),
+ (21, 6, 2, N'Evening',                          N'Strong', NULL,      NULL, NULL, NULL, NULL,   NULL),
+ (22, 6, 3, N'Both',                             NULL,      NULL,      NULL, NULL, NULL, NULL,   NULL),
+ -- 7. Bottle size
+ (23, 7, 1, N'50 ml',                            NULL,      NULL,      NULL, NULL, 50,   NULL,   NULL),
+ (24, 7, 2, N'100 ml',                           NULL,      NULL,      NULL, NULL, 100,  NULL,   NULL),
+ (25, 7, 3, N'No preference',                    NULL,      NULL,      NULL, NULL, NULL, NULL,   NULL),
+ -- 8. Budget (excludes perfumes outside the range)
+ (26, 8, 1, N'Under $90',                        NULL,      NULL,      NULL, NULL, NULL, 0,      89.99),
+ (27, 8, 2, N'$90 – $120',                       NULL,      NULL,      NULL, NULL, NULL, 90,     120),
+ (28, 8, 3, N'Over $120',                        NULL,      NULL,      NULL, NULL, NULL, 120.01, NULL),
+ (29, 8, 4, N'No limit',                         NULL,      NULL,      NULL, NULL, NULL, NULL,   NULL);
+SET IDENTITY_INSERT dbo.AnswerOptions OFF;
 
-/* Sara already answered the questionnaire: light, natural, allergic to jasmine */
+/* Sara already answered: allergic to jasmine, light, natural, floral, likes rose + vanilla,
+   daytime, 50 ml, budget under $90 */
 SET IDENTITY_INSERT dbo.CustomerPreferences ON;
-INSERT INTO dbo.CustomerPreferences (PreferenceId, CustomerId, Intensity, Style) VALUES (1, 2, N'Light', N'Natural');
+INSERT INTO dbo.CustomerPreferences (PreferenceId, CustomerId) VALUES (1, 2);
 SET IDENTITY_INSERT dbo.CustomerPreferences OFF;
-INSERT INTO dbo.CustomerAllergies (PreferenceId, MaterialId) VALUES (1, 3);
+INSERT INTO dbo.CustomerAnswers (PreferenceId, OptionId) VALUES (1, 2), (1, 4), (1, 6), (1, 9), (1, 14), (1, 18), (1, 20), (1, 23), (1, 26);
 
 /* ---------- Shopping carts ---------- */
 INSERT INTO dbo.ShoppingCarts (CustomerId) VALUES (2), (3);

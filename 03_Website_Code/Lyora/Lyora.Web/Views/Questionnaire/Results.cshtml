@@ -1,0 +1,85 @@
+@model RecommendationsViewModel
+@{
+    ViewData["Title"] = "My recommendations";
+    var result = Model.Result;
+}
+
+<section class="container section">
+    <div class="page-title title-row">
+        <div>
+            <span class="eyebrow">Find my scent</span>
+            <h1>Your perfumes</h1>
+            <p class="muted">Based on your answers of @Format.Date(Model.AnsweredAt).</p>
+        </div>
+        <a class="btn btn-outline" asp-action="Take">Retake the questionnaire</a>
+    </div>
+
+    @if (result.HiddenByAllergy > 0 || result.HiddenByBudget > 0)
+    {
+        <p class="quiz-note">
+            @if (result.HiddenByAllergy > 0)
+            {
+                <span>We hid <strong>@result.HiddenByAllergy</strong> perfume@(result.HiddenByAllergy == 1 ? "" : "s") containing an ingredient you are allergic to.</span>
+            }
+            @if (result.HiddenByBudget > 0)
+            {
+                <span><strong>@result.HiddenByBudget</strong> perfume@(result.HiddenByBudget == 1 ? " is" : "s are") outside your budget.</span>
+            }
+        </p>
+    }
+
+    @if (result.Recommendations.Count == 0)
+    {
+        <div class="empty panel">
+            <h3>No perfume fits all your answers right now.</h3>
+            <p>Try a wider budget, or come back soon – new perfumes are added regularly.</p>
+            <a class="btn btn-gold" asp-action="Take">Change my answers</a>
+        </div>
+    }
+    else
+    {
+        @if (result.IsFallback)
+        {
+            <div class="alert alert-error">No perfume matched your preferences exactly, so here are our best-sellers that are safe for you.</div>
+        }
+        <div class="perfume-grid">
+            @foreach (var r in result.Recommendations)
+            {
+                <a class="perfume-card" asp-controller="Perfumes" asp-action="Details" asp-route-id="@r.Perfume.PerfumeId">
+                    <div class="perfume-image">
+                        <img src="@Format.Image(r.Perfume.ImageUrl)" alt="@r.Perfume.Name" loading="lazy" />
+                        @if (!result.IsFallback)
+                        {
+                            <span class="match-badge">@r.MatchPercent% match</span>
+                        }
+                    </div>
+                    <div class="perfume-info">
+                        <span class="eyebrow">@r.Perfume.CategoryName</span>
+                        <h3>@r.Perfume.Name</h3>
+                        @if (r.Reasons.Count > 0)
+                        {
+                            <ul class="reasons">
+                                @foreach (var reason in r.Reasons)
+                                {
+                                    <li>✓ @reason</li>
+                                }
+                            </ul>
+                        }
+                        <span class="price">@Format.Money(r.Perfume.Price)</span>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+
+    <details class="panel answers-summary">
+        <summary>Your answers</summary>
+        <dl>
+            @foreach (var a in Model.Answers)
+            {
+                <dt>@a.Question</dt>
+                <dd>@a.Answer</dd>
+            }
+        </dl>
+    </details>
+</section>

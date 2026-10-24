@@ -16,6 +16,10 @@
             <nav class="main-nav">
                 <a asp-controller="Home" asp-action="Index">Home</a>
                 <a asp-controller="Perfumes" asp-action="Index">Perfumes</a>
+                @if (!User.IsInRole(Roles.Administrator))
+                {
+                    <a asp-controller="Questionnaire" asp-action="Index">Find my scent</a>
+                }
                 <partial name="_UserMenu" />
             </nav>
         </div>

@@ -15,7 +15,7 @@ GO
 /* Drop old tables (children first) so the script can be run again */
 DROP TABLE IF EXISTS
     dbo.InventoryTransactions, dbo.Payments, dbo.OrderItems, dbo.Orders,
-    dbo.CartItems, dbo.ShoppingCarts, dbo.CustomerAllergies, dbo.CustomerPreferences,
+    dbo.CartItems, dbo.ShoppingCarts, dbo.CustomerAnswers, dbo.CustomerAllergies, dbo.CustomerPreferences,
     dbo.AnswerOptions, dbo.Questions, dbo.BOMItems, dbo.PromotionPerfumes,
     dbo.Promotions, dbo.Perfumes, dbo.Categories, dbo.RawMaterials,
     dbo.Notifications, dbo.Customers, dbo.Administrators, dbo.Users;
@@ -119,35 +119,45 @@ CREATE TABLE dbo.PromotionPerfumes (
 /* ---------------------------------------------------------------------
    3. QUESTIONNAIRE AND CUSTOMER PREFERENCES
    --------------------------------------------------------------------- */
+/* 8 simple preference questions (no psychological questions) */
 CREATE TABLE dbo.Questions (
-    QuestionId  INT IDENTITY(1,1) CONSTRAINT PK_Questions PRIMARY KEY,
-    Text        NVARCHAR(300) NOT NULL,
-    Topic       NVARCHAR(20)  NOT NULL CONSTRAINT CK_Questions_Topic CHECK (Topic IN (N'Allergy', N'Intensity', N'Style')),
-    IsActive    BIT NOT NULL CONSTRAINT DF_Questions_IsActive DEFAULT 1
+    QuestionId     INT IDENTITY(1,1) CONSTRAINT PK_Questions PRIMARY KEY,
+    Text           NVARCHAR(300) NOT NULL,
+    Topic          NVARCHAR(20)  NOT NULL CONSTRAINT CK_Questions_Topic
+                   CHECK (Topic IN (N'Allergy', N'Intensity', N'Style', N'Family', N'Notes', N'Occasion', N'Size', N'Budget')),
+    AllowMultiple  BIT NOT NULL CONSTRAINT DF_Questions_AllowMultiple DEFAULT 0,   -- 1 = the customer can tick several options
+    SortOrder      INT NOT NULL CONSTRAINT DF_Questions_SortOrder DEFAULT 0,
+    IsActive       BIT NOT NULL CONSTRAINT DF_Questions_IsActive DEFAULT 1
 );
 
+/* Each option says what it means for the recommendation (only the columns that apply are filled) */
 CREATE TABLE dbo.AnswerOptions (
-    OptionId         INT IDENTITY(1,1) CONSTRAINT PK_AnswerOptions PRIMARY KEY,
-    QuestionId       INT NOT NULL CONSTRAINT FK_AnswerOptions_Questions REFERENCES dbo.Questions(QuestionId) ON DELETE CASCADE,
-    Text             NVARCHAR(200) NOT NULL,
-    MapsToIntensity  NVARCHAR(10) NULL CONSTRAINT CK_AnswerOptions_Intensity CHECK (MapsToIntensity IN (N'Light', N'Strong')),
-    MapsToStyle      NVARCHAR(10) NULL CONSTRAINT CK_AnswerOptions_Style CHECK (MapsToStyle IN (N'Natural', N'Bold', N'Simple'))
+    OptionId          INT IDENTITY(1,1) CONSTRAINT PK_AnswerOptions PRIMARY KEY,
+    QuestionId        INT NOT NULL CONSTRAINT FK_AnswerOptions_Questions REFERENCES dbo.Questions(QuestionId) ON DELETE CASCADE,
+    Text              NVARCHAR(200) NOT NULL,
+    SortOrder         INT NOT NULL CONSTRAINT DF_AnswerOptions_SortOrder DEFAULT 0,
+    MapsToIntensity   NVARCHAR(10) NULL CONSTRAINT CK_AnswerOptions_Intensity CHECK (MapsToIntensity IN (N'Light', N'Strong')),
+    MapsToStyle       NVARCHAR(10) NULL CONSTRAINT CK_AnswerOptions_Style CHECK (MapsToStyle IN (N'Natural', N'Bold', N'Simple')),
+    MapsToCategoryId  INT NULL CONSTRAINT FK_AnswerOptions_Categories REFERENCES dbo.Categories(CategoryId),
+    MapsToMaterialId  INT NULL CONSTRAINT FK_AnswerOptions_RawMaterials REFERENCES dbo.RawMaterials(MaterialId),   -- allergy or liked note
+    MapsToSizeMl      INT NULL,
+    MinPrice          DECIMAL(10,2) NULL,
+    MaxPrice          DECIMAL(10,2) NULL
 );
 
 CREATE TABLE dbo.CustomerPreferences (
     PreferenceId  INT IDENTITY(1,1) CONSTRAINT PK_CustomerPreferences PRIMARY KEY,
     CustomerId    INT NOT NULL CONSTRAINT UQ_CustomerPreferences_Customer UNIQUE
                   CONSTRAINT FK_CustomerPreferences_Customers REFERENCES dbo.Customers(CustomerId) ON DELETE CASCADE,
-    Intensity     NVARCHAR(10) NULL CONSTRAINT CK_CustomerPreferences_Intensity CHECK (Intensity IN (N'Light', N'Strong')),
-    Style         NVARCHAR(10) NULL CONSTRAINT CK_CustomerPreferences_Style CHECK (Style IN (N'Natural', N'Bold', N'Simple')),
-    CreatedAt     DATETIME2 NOT NULL CONSTRAINT DF_CustomerPreferences_CreatedAt DEFAULT SYSDATETIME()
+    CreatedAt     DATETIME2 NOT NULL CONSTRAINT DF_CustomerPreferences_CreatedAt DEFAULT SYSDATETIME(),
+    UpdatedAt     DATETIME2 NOT NULL CONSTRAINT DF_CustomerPreferences_UpdatedAt DEFAULT SYSDATETIME()
 );
 
-/* Raw materials the customer is allergic to (allergicTo [0..*] in the Class Diagram) */
-CREATE TABLE dbo.CustomerAllergies (
-    PreferenceId  INT NOT NULL CONSTRAINT FK_CustomerAllergies_Preferences REFERENCES dbo.CustomerPreferences(PreferenceId) ON DELETE CASCADE,
-    MaterialId    INT NOT NULL CONSTRAINT FK_CustomerAllergies_RawMaterials REFERENCES dbo.RawMaterials(MaterialId),
-    CONSTRAINT PK_CustomerAllergies PRIMARY KEY (PreferenceId, MaterialId)
+/* The options the customer chose (one row per ticked option) */
+CREATE TABLE dbo.CustomerAnswers (
+    PreferenceId  INT NOT NULL CONSTRAINT FK_CustomerAnswers_Preferences REFERENCES dbo.CustomerPreferences(PreferenceId) ON DELETE CASCADE,
+    OptionId      INT NOT NULL CONSTRAINT FK_CustomerAnswers_Options REFERENCES dbo.AnswerOptions(OptionId),
+    CONSTRAINT PK_CustomerAnswers PRIMARY KEY (PreferenceId, OptionId)
 );
 
 /* ---------------------------------------------------------------------

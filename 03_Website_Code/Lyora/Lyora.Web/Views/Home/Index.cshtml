@@ -36,6 +36,20 @@
     </div>
 </section>
 
+@if (!User.IsInRole(Roles.Administrator))
+{
+    <section class="container">
+        <div class="quiz-banner">
+            <div>
+                <span class="eyebrow">Find my scent</span>
+                <h2>Not sure which perfume to choose?</h2>
+                <p>Answer 8 quick questions about what you like – we hide anything you are allergic to and suggest the perfumes that fit you best.</p>
+            </div>
+            <a class="btn btn-gold" asp-controller="Questionnaire" asp-action="Index">Take the questionnaire</a>
+        </div>
+    </section>
+}
+
 <section class="container section">
     <div class="section-head">
         <h2>Shop by family</h2>

@@ -98,6 +98,49 @@ public class PerfumeRepository
         return items;
     }
 
+    // ---------- Recommendation data ----------
+
+    /// <summary>For every active perfume: the raw materials of its formula (BOM).</summary>
+    public Dictionary<int, HashSet<int>> GetBomMaterialsOfActivePerfumes()
+    {
+        const string sql = @"
+        SELECT b.PerfumeId, b.MaterialId
+        FROM dbo.BOMItems b
+        JOIN dbo.Perfumes p ON p.PerfumeId = b.PerfumeId
+        WHERE p.IsActive = 1;";
+
+        using var connection = _db.Open();
+        using var command = new SqlCommand(sql, connection);
+        using var reader = command.ExecuteReader();
+
+        var result = new Dictionary<int, HashSet<int>>();
+        while (reader.Read())
+        {
+            var perfumeId = reader.GetInt32(0);
+            if (!result.TryGetValue(perfumeId, out var materials))
+            {
+                result[perfumeId] = materials = new HashSet<int>();
+            }
+            materials.Add(reader.GetInt32(1));
+        }
+        return result;
+    }
+
+    /// <summary>Bottles sold per perfume (orders that were not cancelled).</summary>
+    public Dictionary<int, int> GetBottlesSold()
+    {
+        using var connection = _db.Open();
+        using var command = new SqlCommand("SELECT PerfumeId, BottlesSold FROM dbo.vw_BestSellingPerfumes;", connection);
+        using var reader = command.ExecuteReader();
+
+        var result = new Dictionary<int, int>();
+        while (reader.Read())
+        {
+            result[reader.GetInt32(0)] = reader.GetInt32(1);
+        }
+        return result;
+    }
+
     // ---------- Administrator (Manage Products & Manage BOM) ----------
 
     /// <summary>All perfumes, including hidden ones.</summary>

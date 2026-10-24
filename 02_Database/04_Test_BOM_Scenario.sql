@@ -75,8 +75,8 @@ SELECT * FROM dbo.InventoryTransactions WHERE OrderId = @OrderId2;              
 EXEC dbo.sp_RestockRawMaterial @MaterialId = 5, @Quantity = 2000;      -- IsStillLow = 0
 SELECT * FROM dbo.vw_LowStockMaterials;                                -- empty again
 
-/* ---------- STEP 9: recommendations and reports ---------- */
-EXEC dbo.sp_GetRecommendations @CustomerId = 2;   -- Sara: light + natural, allergic to jasmine
+/* ---------- STEP 9: questionnaire answers and reports ---------- */
+SELECT * FROM dbo.vw_CustomerAnswers WHERE CustomerId = 2 ORDER BY QuestionNo;   -- Sara's 8 answers
 SELECT * FROM dbo.vw_BestSellingPerfumes;
 SELECT * FROM dbo.vw_SalesByMonth;
 SELECT * FROM dbo.vw_CustomerAgeSegments;

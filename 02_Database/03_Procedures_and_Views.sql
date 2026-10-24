@@ -309,49 +309,28 @@ END;
 GO
 
 /* =====================================================================
-   STORED PROCEDURE – RECOMMENDATIONS
+   QUESTIONNAIRE
+   The recommendation itself is calculated in C# (RecommendationEngine,
+   Business Logic Layer). This view only shows the saved answers clearly.
    ===================================================================== */
 
-/* Perfumes that match the customer's saved preference.
-   - Perfumes containing a raw material the customer is allergic to are excluded.
-   - Score = 1 point for matching intensity + 1 point for matching style.
-   - If nothing matches, the best-selling allowed perfumes are returned. */
-CREATE OR ALTER PROCEDURE dbo.sp_GetRecommendations
-    @CustomerId INT,
-    @Top        INT = 5
+DROP PROCEDURE IF EXISTS dbo.sp_GetRecommendations;   -- replaced by RecommendationEngine (C#)
+GO
+
+CREATE OR ALTER VIEW dbo.vw_CustomerAnswers
 AS
-BEGIN
-    SET NOCOUNT ON;
-
-    DECLARE @Allowed TABLE (PerfumeId INT PRIMARY KEY, MatchScore INT NOT NULL);
-
-    INSERT INTO @Allowed (PerfumeId, MatchScore)
-    SELECT p.PerfumeId,
-           CASE WHEN p.Intensity = cp.Intensity THEN 1 ELSE 0 END
-         + CASE WHEN p.Style     = cp.Style     THEN 1 ELSE 0 END
-    FROM dbo.Perfumes p
-    CROSS JOIN dbo.CustomerPreferences cp
-    WHERE cp.CustomerId = @CustomerId
-      AND p.IsActive = 1
-      AND NOT EXISTS (SELECT 1
-                      FROM dbo.BOMItems b
-                      JOIN dbo.CustomerAllergies ca ON ca.MaterialId = b.MaterialId
-                      WHERE b.PerfumeId = p.PerfumeId
-                        AND ca.PreferenceId = cp.PreferenceId);
-
-    IF EXISTS (SELECT 1 FROM @Allowed WHERE MatchScore > 0)
-        SELECT TOP (@Top) p.PerfumeId, p.Name, p.Price, p.SizeMl, p.Intensity, p.Style, a.MatchScore
-        FROM @Allowed a
-        JOIN dbo.Perfumes p ON p.PerfumeId = a.PerfumeId
-        WHERE a.MatchScore > 0
-        ORDER BY a.MatchScore DESC, p.Price;
-    ELSE
-        SELECT TOP (@Top) p.PerfumeId, p.Name, p.Price, p.SizeMl, p.Intensity, p.Style, a.MatchScore
-        FROM @Allowed a
-        JOIN dbo.Perfumes p ON p.PerfumeId = a.PerfumeId
-        LEFT JOIN dbo.vw_BestSellingPerfumes bs ON bs.PerfumeId = a.PerfumeId
-        ORDER BY ISNULL(bs.BottlesSold, 0) DESC, p.Name;
-END;
+SELECT cp.CustomerId,
+       u.FullName,
+       q.SortOrder AS QuestionNo,
+       q.Topic,
+       q.Text      AS Question,
+       o.Text      AS Answer,
+       cp.UpdatedAt
+FROM dbo.CustomerPreferences cp
+JOIN dbo.Users u            ON u.UserId = cp.CustomerId
+JOIN dbo.CustomerAnswers ca ON ca.PreferenceId = cp.PreferenceId
+JOIN dbo.AnswerOptions o    ON o.OptionId = ca.OptionId
+JOIN dbo.Questions q        ON q.QuestionId = o.QuestionId;
 GO
 
 PRINT N'LyoraDB: views and stored procedures created successfully.';

@@ -29,3 +29,16 @@ public enum TransactionType
     Restock,
     CancelReturn
 }
+
+/// <summary>What a questionnaire question is about (same values as dbo.Questions.Topic).</summary>
+public enum QuestionTopic
+{
+    Allergy,
+    Intensity,
+    Style,
+    Family,
+    Notes,
+    Occasion,
+    Size,
+    Budget
+}

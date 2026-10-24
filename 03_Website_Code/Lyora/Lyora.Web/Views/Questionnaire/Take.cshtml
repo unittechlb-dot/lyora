@@ -1,0 +1,62 @@
+@model QuestionnaireViewModel
+@{
+    ViewData["Title"] = "Find my scent";
+}
+
+<section class="container section">
+    <div class="page-title quiz-title">
+        <span class="eyebrow">Find my scent</span>
+        <h1>Tell us what you like</h1>
+        <p class="muted">@Model.Questions.Count quick questions about your fragrance preferences. You can change your answers at any time.</p>
+    </div>
+
+    <form class="quiz" method="post" asp-action="Take" id="quiz">
+        <div asp-validation-summary="ModelOnly" class="alert alert-error"></div>
+
+        @{ var number = 0; }
+        @foreach (var q in Model.Questions)
+        {
+            number++;
+            var type = q.AllowMultiple ? "checkbox" : "radio";
+            <fieldset class="quiz-question" data-topic="@q.Topic">
+                <legend>
+                    <span class="quiz-number">@number</span>
+                    <span>@q.Text</span>
+                    @if (q.AllowMultiple)
+                    {
+                        <span class="hint">@(q.Topic == QuestionTopic.Notes ? "Optional – choose any" : "Choose all that apply")</span>
+                    }
+                </legend>
+                <div class="quiz-options">
+                    @foreach (var o in q.Options)
+                    {
+                        <label class="quiz-option">
+                            <input type="@type" name="q@(q.QuestionId)" value="@o.OptionId"
+                                   checked="@Model.Selected.Contains(o.OptionId)"
+                                   data-none="@(q.Topic == QuestionTopic.Allergy && o.MapsToMaterialId == null ? "true" : null)" />
+                            <span>@o.Text</span>
+                        </label>
+                    }
+                </div>
+            </fieldset>
+        }
+
+        <div class="quiz-submit">
+            <button type="submit" class="btn btn-gold">Show my perfumes</button>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <script>
+        // "No allergies" and the ingredients cannot be ticked together.
+        document.querySelectorAll('[data-topic="Allergy"] input').forEach(function (box) {
+            box.addEventListener('change', function () {
+                if (!box.checked) return;
+                document.querySelectorAll('[data-topic="Allergy"] input').forEach(function (other) {
+                    if (other !== box && (box.dataset.none === 'true' || other.dataset.none === 'true')) other.checked = false;
+                });
+            });
+        });
+    </script>
+}
