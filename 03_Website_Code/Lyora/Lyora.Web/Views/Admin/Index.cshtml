@@ -11,6 +11,14 @@
         <p class="muted">Welcome, @User.Identity?.Name.</p>
     </div>
 
+    @if ((int)ViewBag.UnreadAlerts > 0)
+    {
+        <a class="alert-banner" asp-controller="Notifications" asp-action="Index">
+            <span class="alert-icon" aria-hidden="true">!</span>
+            <span><strong>@ViewBag.UnreadAlerts unread low-stock alert@((int)ViewBag.UnreadAlerts == 1 ? "" : "s")</strong> – a raw material went below its threshold. Open notifications →</span>
+        </a>
+    }
+
     <div class="stat-grid">
         <div class="stat">
             <span class="stat-label">Active perfumes</span>

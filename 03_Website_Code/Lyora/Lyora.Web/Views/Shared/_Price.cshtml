@@ -1,0 +1,9 @@
+@model Perfume
+@* Price the customer pays; the list price is struck through during a promotion. *@
+<span class="price">
+    @Format.Money(Model.FinalPrice)
+    @if (Model.HasDiscount)
+    {
+        <s class="old-price">@Format.Money(Model.Price)</s>
+    }
+</span>

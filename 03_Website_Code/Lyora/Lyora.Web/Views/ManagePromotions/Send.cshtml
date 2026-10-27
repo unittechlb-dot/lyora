@@ -1,0 +1,57 @@
+@model SendPromotionViewModel
+@{
+    var p = Model.Promotion;
+    ViewData["Title"] = "Send promotion";
+}
+
+<section class="container section">
+    <partial name="_AdminNav" />
+    <a class="link back-link" asp-action="Index">← All promotions</a>
+    <div class="form-card form-card-wide">
+        <span class="eyebrow">Send targeted notification</span>
+        <h1>@p.Title</h1>
+        <p class="muted">−@p.DiscountPercent.ToString("0.##")% on @string.Join(", ", p.PerfumeNames) · until @p.EndDate.ToString("dd MMM yyyy")</p>
+
+        <form method="post" asp-action="Send" asp-route-id="@p.PromotionId">
+            <fieldset class="audience">
+                <legend>Who should receive it?</legend>
+
+                <label class="audience-option">
+                    <input type="radio" name="Audience" value="@PromotionAudience.AllCustomers" checked />
+                    <span><strong>All customers</strong></span>
+                </label>
+
+                <label class="audience-option">
+                    <input type="radio" name="Audience" value="@PromotionAudience.BoughtPromotedPerfumes" />
+                    <span><strong>Customers who bought these perfumes before</strong></span>
+                </label>
+
+                <label class="audience-option">
+                    <input type="radio" name="Audience" value="@PromotionAudience.AgeGroup" />
+                    <span><strong>An age group</strong>
+                        <select name="AgeGroup" aria-label="Age group">
+                            @foreach (var g in Lyora.BLL.Services.PromotionService.AgeGroups)
+                            {
+                                <option value="@g">@g years</option>
+                            }
+                        </select>
+                    </span>
+                </label>
+
+                <label class="audience-option">
+                    <input type="radio" name="Audience" value="@PromotionAudience.Gender" />
+                    <span><strong>A gender</strong>
+                        <select name="Gender" aria-label="Gender">
+                            @foreach (var g in Lyora.BLL.Services.PromotionService.Genders)
+                            {
+                                <option value="@g">@g</option>
+                            }
+                        </select>
+                    </span>
+                </label>
+            </fieldset>
+
+            <button type="submit" class="btn btn-gold">Send notification</button>
+        </form>
+    </div>
+</section>

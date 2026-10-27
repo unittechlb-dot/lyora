@@ -18,7 +18,10 @@ public class CartItem
     public string PerfumeName { get; set; } = "";
     public string? ImageUrl { get; set; }
     public int SizeMl { get; set; }
+    /// <summary>Price paid per bottle (promotion applied) and the list price.</summary>
     public decimal UnitPrice { get; set; }
+    public decimal ListPrice { get; set; }
+    public decimal DiscountPercent { get; set; }
     public int Quantity { get; set; }
     public bool IsActive { get; set; }
 

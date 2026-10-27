@@ -1,0 +1,185 @@
+@model AnalyticsReport
+@using System.Globalization
+@{
+    ViewData["Title"] = "Analytics";
+
+    // Last 12 months, including months without sales (shown as empty columns).
+    var firstMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(-11);
+    var months = Enumerable.Range(0, 12).Select(i => firstMonth.AddMonths(i))
+        .Select(m => (Date: m, Sales: Model.SalesByMonth.FirstOrDefault(s => s.Year == m.Year && s.Month == m.Month) ?? new MonthlySales { Year = m.Year, Month = m.Month }))
+        .ToList();
+    var maxRevenue = months.Max(m => m.Sales.Revenue);
+    var maxBottles = Model.BestSellers.Count == 0 ? 0 : Model.BestSellers.Max(b => b.BottlesSold);
+    var maxAge = Model.AgeGroups.Count == 0 ? 0 : Model.AgeGroups.Max(a => a.Customers);
+    var maxGender = Model.Genders.Count == 0 ? 0 : Model.Genders.Max(g => g.Customers);
+    var liquids = Model.RawMaterialsUsed.Where(m => m.Unit != "pcs").ToList();
+    var pieces = Model.RawMaterialsUsed.Where(m => m.Unit == "pcs").ToList();
+    var maxLiquid = liquids.Count == 0 ? 0 : liquids.Max(m => m.QuantityUsed);
+    string MonthName(DateTime d) => d.ToString("MMM yyyy", CultureInfo.InvariantCulture);
+}
+
+<section class="container section">
+    <partial name="_AdminNav" />
+    <div class="page-title">
+        <span class="eyebrow">Reports</span>
+        <h1>Analytics</h1>
+        <p class="muted">Sales, product performance and customer demographics (cancelled orders are not counted).</p>
+    </div>
+
+    <div class="stat-grid stat-grid-5">
+        <div class="stat"><span class="stat-label">Revenue</span><span class="stat-value">@Format.Money(Model.Revenue)</span></div>
+        <div class="stat"><span class="stat-label">Orders</span><span class="stat-value">@Model.Orders</span></div>
+        <div class="stat"><span class="stat-label">Bottles sold</span><span class="stat-value">@Model.Bottles</span></div>
+        <div class="stat"><span class="stat-label">Average order</span><span class="stat-value">@Format.Money(Model.AverageOrder)</span></div>
+        <div class="stat"><span class="stat-label">Buying customers</span><span class="stat-value">@Model.BuyingCustomers</span></div>
+    </div>
+
+    @if (Model.Orders == 0)
+    {
+        <div class="empty panel">
+            <h3>No sales yet.</h3>
+            <p>Place some orders, or run <code>05_Demo_Sales_History.sql</code> in SSMS to fill the reports with demo data.</p>
+        </div>
+    }
+    else
+    {
+        <!-- 1. Monthly sales -->
+        <div class="panel chart-panel">
+            <h2>Monthly sales</h2>
+            <p class="muted small">Revenue per month – last 12 months</p>
+            <div class="col-chart" role="img" aria-label="Monthly revenue for the last 12 months">
+                @foreach (var m in months)
+                {
+                    var tip = $"{MonthName(m.Date)}: {Format.Money(m.Sales.Revenue)} · {m.Sales.Orders} orders · {m.Sales.Bottles} bottles";
+                    <div class="col" data-tip="@tip" title="@tip" tabindex="0">
+                        <span class="col-value">@(m.Sales.Revenue > 0 ? Format.ShortMoney(m.Sales.Revenue) : "")</span>
+                        <span class="col-bar" style="height:@Format.Percent(m.Sales.Revenue, maxRevenue)"></span>
+                        <span class="col-label">@m.Date.ToString("MMM", CultureInfo.InvariantCulture)</span>
+                    </div>
+                }
+            </div>
+            <details class="table-toggle">
+                <summary>View as table</summary>
+                <table class="table">
+                    <thead><tr><th>Month</th><th class="num">Orders</th><th class="num">Bottles</th><th class="num">Revenue</th></tr></thead>
+                    <tbody>
+                        @foreach (var m in months.Where(m => m.Sales.Orders > 0))
+                        {
+                            <tr><td>@MonthName(m.Date)</td><td class="num">@m.Sales.Orders</td><td class="num">@m.Sales.Bottles</td><td class="num">@Format.Money(m.Sales.Revenue)</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </details>
+        </div>
+
+        <div class="analytics-grid">
+            <!-- 2. Best-selling perfumes -->
+            <div class="panel chart-panel">
+                <h2>Best-selling perfumes</h2>
+                <p class="muted small">Bottles sold</p>
+                <div class="bar-chart">
+                    @foreach (var b in Model.BestSellers)
+                    {
+                        var tip = $"{b.Name}: {b.BottlesSold} bottles · {Format.Money(b.Revenue)}";
+                        <div class="bar-row" data-tip="@tip" title="@tip" tabindex="0">
+                            <span class="bar-label">@b.Name</span>
+                            <span class="bar-track"><span class="bar-fill" style="width:@Format.Percent(b.BottlesSold, maxBottles)"></span></span>
+                            <span class="bar-value">@b.BottlesSold</span>
+                        </div>
+                    }
+                </div>
+                <details class="table-toggle">
+                    <summary>View as table</summary>
+                    <table class="table">
+                        <thead><tr><th>Perfume</th><th class="num">Bottles</th><th class="num">Revenue</th></tr></thead>
+                        <tbody>
+                            @foreach (var b in Model.BestSellers)
+                            {
+                                <tr><td>@b.Name</td><td class="num">@b.BottlesSold</td><td class="num">@Format.Money(b.Revenue)</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </details>
+            </div>
+
+            <!-- 3. Raw materials used (BOM) -->
+            <div class="panel chart-panel">
+                <h2>Raw materials used</h2>
+                <p class="muted small">Deducted by BOM for sold bottles (ml)</p>
+                <div class="bar-chart">
+                    @foreach (var m in liquids)
+                    {
+                        var tip = $"{m.Name}: {m.QuantityUsed:#,0.##} {m.Unit}";
+                        <div class="bar-row" data-tip="@tip" title="@tip" tabindex="0">
+                            <span class="bar-label">@m.Name</span>
+                            <span class="bar-track"><span class="bar-fill" style="width:@Format.Percent(m.QuantityUsed, maxLiquid)"></span></span>
+                            <span class="bar-value">@m.QuantityUsed.ToString("#,0.##") @m.Unit</span>
+                        </div>
+                    }
+                </div>
+                @if (pieces.Count > 0)
+                {
+                    <p class="muted small">Packaging: @string.Join(" · ", pieces.Select(p => $"{p.Name} × {p.QuantityUsed:0}"))</p>
+                }
+            </div>
+
+            <!-- 4. Customers by age group -->
+            <div class="panel chart-panel">
+                <h2>Customers by age group</h2>
+                <p class="muted small">Number of customers</p>
+                <div class="bar-chart">
+                    @foreach (var a in Model.AgeGroups)
+                    {
+                        var tip = $"{a.Segment} years: {a.Customers} customers · {a.Orders} orders";
+                        <div class="bar-row" data-tip="@tip" title="@tip" tabindex="0">
+                            <span class="bar-label">@a.Segment years</span>
+                            <span class="bar-track"><span class="bar-fill" style="width:@Format.Percent(a.Customers, maxAge)"></span></span>
+                            <span class="bar-value">@a.Customers</span>
+                        </div>
+                    }
+                </div>
+                <details class="table-toggle">
+                    <summary>View as table</summary>
+                    <table class="table">
+                        <thead><tr><th>Age group</th><th class="num">Customers</th><th class="num">Orders</th></tr></thead>
+                        <tbody>
+                            @foreach (var a in Model.AgeGroups)
+                            {
+                                <tr><td>@a.Segment</td><td class="num">@a.Customers</td><td class="num">@a.Orders</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </details>
+            </div>
+
+            <!-- 5. Customers by gender -->
+            <div class="panel chart-panel">
+                <h2>Customers by gender</h2>
+                <p class="muted small">Number of customers</p>
+                <div class="bar-chart">
+                    @foreach (var g in Model.Genders)
+                    {
+                        var tip = $"{g.Segment}: {g.Customers} customers · {g.Orders} orders";
+                        <div class="bar-row" data-tip="@tip" title="@tip" tabindex="0">
+                            <span class="bar-label">@g.Segment</span>
+                            <span class="bar-track"><span class="bar-fill" style="width:@Format.Percent(g.Customers, maxGender)"></span></span>
+                            <span class="bar-value">@g.Customers</span>
+                        </div>
+                    }
+                </div>
+                <details class="table-toggle">
+                    <summary>View as table</summary>
+                    <table class="table">
+                        <thead><tr><th>Gender</th><th class="num">Customers</th><th class="num">Orders</th></tr></thead>
+                        <tbody>
+                            @foreach (var g in Model.Genders)
+                            {
+                                <tr><td>@g.Segment</td><td class="num">@g.Customers</td><td class="num">@g.Orders</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </details>
+            </div>
+        </div>
+    }
+</section>

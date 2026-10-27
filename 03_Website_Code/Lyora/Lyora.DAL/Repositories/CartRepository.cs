@@ -21,12 +21,13 @@ public class CartRepository
         const string sql = @"
         SELECT CartId FROM dbo.ShoppingCarts WHERE CustomerId = @CustomerId;
 
-        SELECT ci.CartItemId, ci.PerfumeId, p.Name, p.ImageUrl, p.SizeMl, p.Price,
-               ci.Quantity, p.IsActive, a.ProducibleBottles
+        SELECT ci.CartItemId, ci.PerfumeId, p.Name, p.ImageUrl, p.SizeMl, pr.FinalPrice,
+               ci.Quantity, p.IsActive, a.ProducibleBottles, p.Price, pr.DiscountPercent
         FROM dbo.CartItems ci
         JOIN dbo.ShoppingCarts s           ON s.CartId = ci.CartId
         JOIN dbo.Perfumes p                ON p.PerfumeId = ci.PerfumeId
         JOIN dbo.vw_PerfumeAvailability a  ON a.PerfumeId = p.PerfumeId
+        JOIN dbo.vw_PerfumePrices pr       ON pr.PerfumeId = p.PerfumeId
         WHERE s.CustomerId = @CustomerId
         ORDER BY ci.CartItemId;";
 
@@ -53,7 +54,9 @@ public class CartRepository
                 UnitPrice = reader.GetDecimal(5),
                 Quantity = reader.GetInt32(6),
                 IsActive = reader.GetBoolean(7),
-                ProducibleBottles = reader.GetInt32(8)
+                ProducibleBottles = reader.GetInt32(8),
+                ListPrice = reader.GetDecimal(9),
+                DiscountPercent = reader.GetDecimal(10)
             });
         }
         return cart;

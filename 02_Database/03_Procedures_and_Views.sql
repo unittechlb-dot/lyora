@@ -33,6 +33,25 @@ LEFT JOIN dbo.RawMaterials r ON r.MaterialId = b.MaterialId
 GROUP BY p.PerfumeId, p.Name, p.Price, p.SizeMl;
 GO
 
+/* Price of each perfume today: the biggest active promotion is applied
+   (promotion active when today is between StartDate and EndDate). Used by the
+   catalog, the cart and sp_PlaceOrder, so the discount is applied everywhere. */
+CREATE OR ALTER VIEW dbo.vw_PerfumePrices
+AS
+SELECT p.PerfumeId,
+       p.Price,
+       ISNULL(d.DiscountPercent, 0) AS DiscountPercent,
+       CAST(ROUND(p.Price * (100 - ISNULL(d.DiscountPercent, 0)) / 100, 2) AS DECIMAL(10,2)) AS FinalPrice
+FROM dbo.Perfumes p
+OUTER APPLY (
+    SELECT MAX(pr.DiscountPercent) AS DiscountPercent
+    FROM dbo.PromotionPerfumes pp
+    JOIN dbo.Promotions pr ON pr.PromotionId = pp.PromotionId
+    WHERE pp.PerfumeId = p.PerfumeId
+      AND CAST(GETDATE() AS DATE) BETWEEN pr.StartDate AND pr.EndDate
+) d;
+GO
+
 /* ---------- Analytics (reports module) ---------- */
 CREATE OR ALTER VIEW dbo.vw_SalesByMonth
 AS
@@ -79,6 +98,31 @@ FROM (
 ) seg
 LEFT JOIN dbo.Orders o ON o.CustomerId = seg.CustomerId AND o.Status <> N'Cancelled'
 GROUP BY seg.AgeGroup;
+GO
+
+CREATE OR ALTER VIEW dbo.vw_CustomerGenderSegments
+AS
+SELECT ISNULL(c.Gender, N'Not specified') AS Gender,
+       COUNT(DISTINCT c.CustomerId)       AS Customers,
+       COUNT(o.OrderId)                   AS Orders
+FROM dbo.Customers c
+LEFT JOIN dbo.Orders o ON o.CustomerId = c.CustomerId AND o.Status <> N'Cancelled'
+GROUP BY ISNULL(c.Gender, N'Not specified');
+GO
+
+/* Raw materials used by sales (Sale minus CancelReturn), for the analytics page */
+CREATE OR ALTER VIEW dbo.vw_RawMaterialConsumption
+AS
+SELECT r.MaterialId,
+       r.Name,
+       r.Unit,
+       SUM(CASE WHEN t.Type = N'Sale' THEN -t.QuantityChange
+                WHEN t.Type = N'CancelReturn' THEN -t.QuantityChange
+                ELSE 0 END) AS QuantityUsed
+FROM dbo.InventoryTransactions t
+JOIN dbo.RawMaterials r ON r.MaterialId = t.MaterialId
+WHERE t.Type IN (N'Sale', N'CancelReturn')
+GROUP BY r.MaterialId, r.Name, r.Unit;
 GO
 
 /* =====================================================================
@@ -154,17 +198,17 @@ BEGIN
 
         /* 2. Create the order, its lines and the cash-on-delivery payment */
         INSERT INTO dbo.Orders (CustomerId, DeliveryAddress, Status, TotalAmount)
-        SELECT @CustomerId, @DeliveryAddress, N'Pending', SUM(ci.Quantity * p.Price)
+        SELECT @CustomerId, @DeliveryAddress, N'Pending', SUM(ci.Quantity * pr.FinalPrice)
         FROM dbo.CartItems ci
-        JOIN dbo.Perfumes p ON p.PerfumeId = ci.PerfumeId
+        JOIN dbo.vw_PerfumePrices pr ON pr.PerfumeId = ci.PerfumeId   -- promotion discount applied
         WHERE ci.CartId = @CartId;
 
         SET @OrderId = SCOPE_IDENTITY();
 
         INSERT INTO dbo.OrderItems (OrderId, PerfumeId, Quantity, UnitPrice)
-        SELECT @OrderId, ci.PerfumeId, ci.Quantity, p.Price
+        SELECT @OrderId, ci.PerfumeId, ci.Quantity, pr.FinalPrice
         FROM dbo.CartItems ci
-        JOIN dbo.Perfumes p ON p.PerfumeId = ci.PerfumeId
+        JOIN dbo.vw_PerfumePrices pr ON pr.PerfumeId = ci.PerfumeId
         WHERE ci.CartId = @CartId;
 
         INSERT INTO dbo.Payments (OrderId, Amount)

@@ -35,7 +35,13 @@
                         </a>
                         <div class="cart-info">
                             <a asp-controller="Perfumes" asp-action="Details" asp-route-id="@item.PerfumeId"><h3>@item.PerfumeName</h3></a>
-                            <span class="muted">@item.SizeMl ml · @Format.Money(item.UnitPrice)</span>
+                            <span class="muted">
+                                @item.SizeMl ml · @Format.Money(item.UnitPrice)
+                                @if (item.DiscountPercent > 0)
+                                {
+                                    <s>@Format.Money(item.ListPrice)</s> <span class="sale-text">−@item.DiscountPercent.ToString("0.##")%</span>
+                                }
+                            </span>
                             @if (!item.IsAvailable)
                             {
                                 <span class="line-warning">

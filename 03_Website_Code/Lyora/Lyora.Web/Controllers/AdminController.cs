@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Lyora.BLL.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,11 +8,18 @@ namespace Lyora.Web.Controllers;
 public class AdminController : AdminControllerBase
 {
     private readonly DashboardService _dashboardService;
+    private readonly NotificationService _notificationService;
 
-    public AdminController(DashboardService dashboardService)
+    public AdminController(DashboardService dashboardService, NotificationService notificationService)
     {
         _dashboardService = dashboardService;
+        _notificationService = notificationService;
     }
 
-    public IActionResult Index() => View(_dashboardService.GetSummary());
+    public IActionResult Index()
+    {
+        var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        ViewBag.UnreadAlerts = _notificationService.CountUnreadLowStockAlerts(adminId);
+        return View(_dashboardService.GetSummary());
+    }
 }

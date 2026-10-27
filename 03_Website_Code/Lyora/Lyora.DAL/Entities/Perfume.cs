@@ -7,7 +7,13 @@ public class Perfume
     public string CategoryName { get; set; } = "";
     public string Name { get; set; } = "";
     public string? Description { get; set; }
+    /// <summary>List price (without promotion).</summary>
     public decimal Price { get; set; }
+
+    /// <summary>Discount of the active promotion today (0 = none) and the price the customer pays.</summary>
+    public decimal DiscountPercent { get; set; }
+    public decimal FinalPrice { get; set; }
+    public bool HasDiscount => DiscountPercent > 0;
     public int SizeMl { get; set; }
     public ScentIntensity Intensity { get; set; }
     public ScentStyle Style { get; set; }

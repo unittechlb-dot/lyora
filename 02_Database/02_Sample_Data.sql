@@ -73,9 +73,10 @@ INSERT INTO dbo.BOMItems (PerfumeId, MaterialId, QuantityPerBottle) VALUES
 
 /* ---------- Promotions ---------- */
 SET IDENTITY_INSERT dbo.Promotions ON;
+-- Dates are relative to today, so the demo always has one finished and one active promotion.
 INSERT INTO dbo.Promotions (PromotionId, Title, DiscountPercent, StartDate, EndDate) VALUES
- (1, N'Spring Floral Week', 15, '2026-03-01', '2026-03-15'),
- (2, N'Autumn Oud Offer',   10, '2026-10-01', '2026-11-30');
+ (1, N'Floral Week',       15, CAST(DATEADD(DAY, -200, GETDATE()) AS DATE), CAST(DATEADD(DAY, -186, GETDATE()) AS DATE)),
+ (2, N'Royal Oud Offer',   10, CAST(DATEADD(DAY,   -5, GETDATE()) AS DATE), CAST(DATEADD(DAY,   30, GETDATE()) AS DATE));
 SET IDENTITY_INSERT dbo.Promotions OFF;
 
 INSERT INTO dbo.PromotionPerfumes (PromotionId, PerfumeId) VALUES (1, 1), (1, 2), (2, 4);
@@ -146,8 +147,8 @@ INSERT INTO dbo.ShoppingCarts (CustomerId) VALUES (2), (3);
 
 /* ---------- Notifications ---------- */
 INSERT INTO dbo.Notifications (UserId, Title, Message, Type) VALUES
- (2, N'Autumn Oud Offer', N'Get 10% off Lyora Royal Oud until 30 November.', N'Promotion'),
- (3, N'Autumn Oud Offer', N'Get 10% off Lyora Royal Oud until 30 November.', N'Promotion');
+ (2, N'Royal Oud Offer', N'Get 10% off Lyora Royal Oud for the next 30 days.', N'Promotion'),
+ (3, N'Royal Oud Offer', N'Get 10% off Lyora Royal Oud for the next 30 days.', N'Promotion');
 GO
 
 PRINT N'LyoraDB: sample data inserted successfully.';

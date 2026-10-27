@@ -80,8 +80,8 @@ public class RecommendationEngine
                 byAllergy++;
             }
             else if (profile.Budget != null &&
-                     ((profile.Budget.MinPrice != null && perfume.Price < profile.Budget.MinPrice) ||
-                      (profile.Budget.MaxPrice != null && perfume.Price > profile.Budget.MaxPrice)))
+                     ((profile.Budget.MinPrice != null && perfume.FinalPrice < profile.Budget.MinPrice) ||
+                      (profile.Budget.MaxPrice != null && perfume.FinalPrice > profile.Budget.MaxPrice)))
             {
                 byBudget++;
             }
@@ -125,7 +125,7 @@ public class RecommendationEngine
 
             list.Add(r);
         }
-        return list.OrderByDescending(r => r.Score).ThenBy(r => r.Perfume.Price).ToList();
+        return list.OrderByDescending(r => r.Score).ThenBy(r => r.Perfume.FinalPrice).ToList();
     }
 
     private class MatchProfile

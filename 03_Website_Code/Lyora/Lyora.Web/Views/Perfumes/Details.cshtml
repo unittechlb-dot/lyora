@@ -15,7 +15,15 @@
         <div class="details-info">
             <span class="eyebrow">@p.CategoryName</span>
             <h1>@p.Name</h1>
-            <p class="details-price">@Format.Money(p.Price) <span>· @p.SizeMl ml</span></p>
+            <p class="details-price">
+                @Format.Money(p.FinalPrice)
+                @if (p.HasDiscount)
+                {
+                    <s class="old-price">@Format.Money(p.Price)</s>
+                    <span class="badge badge-sale-inline">−@p.DiscountPercent.ToString("0.##")%</span>
+                }
+                <span>· @p.SizeMl ml</span>
+            </p>
             <p class="details-description">@p.Description</p>
 
             <div class="tags">

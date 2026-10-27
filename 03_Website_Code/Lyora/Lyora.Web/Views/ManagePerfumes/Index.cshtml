@@ -26,7 +26,13 @@
                         <td><strong>@p.Name</strong></td>
                         <td>@p.CategoryName</td>
                         <td>@p.SizeMl ml</td>
-                        <td class="num">@Format.Money(p.Price)</td>
+                        <td class="num">
+                            @Format.Money(p.Price)
+                            @if (p.HasDiscount)
+                            {
+                                <br /><span class="sale-text">@Format.Money(p.FinalPrice) (−@p.DiscountPercent.ToString("0.##")%)</span>
+                            }
+                        </td>
                         <td class="num @(p.ProducibleBottles == 0 ? "low" : "")">@p.ProducibleBottles bottles</td>
                         <td>@(p.IsActive ? "Visible" : "Hidden")</td>
                         <td class="num"><a class="link" asp-action="Edit" asp-route-id="@p.PerfumeId">Edit &amp; BOM →</a></td>

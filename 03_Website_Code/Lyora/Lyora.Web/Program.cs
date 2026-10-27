@@ -35,6 +35,9 @@ builder.Services.AddScoped<CartRepository>();
 builder.Services.AddScoped<OrderRepository>();
 builder.Services.AddScoped<RawMaterialRepository>();
 builder.Services.AddScoped<QuestionnaireRepository>();
+builder.Services.AddScoped<NotificationRepository>();
+builder.Services.AddScoped<PromotionRepository>();
+builder.Services.AddScoped<AnalyticsRepository>();
 
 // ---- Business Logic Layer ----
 builder.Services.AddScoped<PerfumeService>();
@@ -47,6 +50,9 @@ builder.Services.AddScoped<InventoryService>();
 builder.Services.AddScoped<AdminOrderService>();
 builder.Services.AddScoped<QuestionnaireService>();
 builder.Services.AddScoped<RecommendationEngine>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<PromotionService>();
+builder.Services.AddScoped<AnalyticsService>();
 
 var app = builder.Build();
 

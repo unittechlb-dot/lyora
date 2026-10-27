@@ -1,0 +1,69 @@
+@model List<Notification>
+@{
+    ViewData["Title"] = "Notifications";
+    var unread = Model.Count(n => !n.IsRead);
+}
+
+<section class="container section">
+    @if (User.IsInRole(Roles.Administrator))
+    {
+        <partial name="_AdminNav" />
+    }
+    <div class="page-title title-row">
+        <div>
+            <span class="eyebrow">@(unread == 0 ? "All caught up" : $"{unread} unread")</span>
+            <h1>Notifications</h1>
+        </div>
+        @if (unread > 0)
+        {
+            <form method="post" asp-action="ReadAll">
+                <button type="submit" class="btn btn-outline">Mark all as read</button>
+            </form>
+        }
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="empty panel">
+            <h3>No notifications yet.</h3>
+            <p>Promotions, order updates and alerts will appear here.</p>
+        </div>
+    }
+    else
+    {
+        <div class="notification-list">
+            @foreach (var n in Model)
+            {
+                <article class="notification @(n.IsRead ? "" : "unread") notification-@n.Type.ToString().ToLowerInvariant()">
+                    <span class="notification-icon" aria-hidden="true">@(n.Type switch { NotificationType.LowStock => "!", NotificationType.Order => "✓", _ => "%" })</span>
+                    <div class="notification-body">
+                        <div class="notification-head">
+                            <span class="notification-type">@(n.Type switch { NotificationType.LowStock => "Low-stock alert", NotificationType.Order => "Order update", _ => "Promotion" })</span>
+                            <span class="muted small">@Format.Date(n.SentAt)</span>
+                        </div>
+                        <h3>@n.Title</h3>
+                        <p>@n.Message</p>
+                        @if (n.Type == NotificationType.LowStock && User.IsInRole(Roles.Administrator))
+                        {
+                            <a class="link" asp-controller="ManageMaterials" asp-action="Index">Go to raw materials →</a>
+                        }
+                        else if (n.Type == NotificationType.Promotion && User.IsInRole(Roles.Customer))
+                        {
+                            <a class="link" asp-controller="Perfumes" asp-action="Index">See the perfumes →</a>
+                        }
+                        else if (n.Type == NotificationType.Order && User.IsInRole(Roles.Customer))
+                        {
+                            <a class="link" asp-controller="Orders" asp-action="Index">My orders →</a>
+                        }
+                    </div>
+                    @if (!n.IsRead)
+                    {
+                        <form method="post" asp-action="Read" asp-route-id="@n.NotificationId">
+                            <button type="submit" class="btn btn-outline btn-small">Mark as read</button>
+                        </form>
+                    }
+                </article>
+            }
+        </div>
+    }
+</section>

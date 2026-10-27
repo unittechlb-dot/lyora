@@ -42,3 +42,19 @@ public enum QuestionTopic
     Size,
     Budget
 }
+
+public enum NotificationType
+{
+    Promotion,
+    Order,
+    LowStock
+}
+
+/// <summary>Who receives a promotion notification.</summary>
+public enum PromotionAudience
+{
+    AllCustomers,
+    AgeGroup,
+    Gender,
+    BoughtPromotedPerfumes
+}

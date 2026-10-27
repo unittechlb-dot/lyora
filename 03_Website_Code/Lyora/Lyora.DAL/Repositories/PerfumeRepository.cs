@@ -11,10 +11,11 @@ public class PerfumeRepository
     private const string SelectPerfume = @"
         SELECT p.PerfumeId, p.CategoryId, c.Name AS CategoryName, p.Name, p.Description,
                p.Price, p.SizeMl, p.Intensity, p.Style, p.ImageUrl, p.IsActive,
-               a.ProducibleBottles
+               a.ProducibleBottles, pr.DiscountPercent, pr.FinalPrice
         FROM dbo.Perfumes p
         JOIN dbo.Categories c              ON c.CategoryId = p.CategoryId
-        JOIN dbo.vw_PerfumeAvailability a  ON a.PerfumeId = p.PerfumeId";
+        JOIN dbo.vw_PerfumeAvailability a  ON a.PerfumeId = p.PerfumeId
+        JOIN dbo.vw_PerfumePrices pr       ON pr.PerfumeId = p.PerfumeId";
 
     public PerfumeRepository(Db db)
     {
@@ -248,7 +249,9 @@ public class PerfumeRepository
                 Style = Enum.Parse<ScentStyle>(reader.GetString(8)),
                 ImageUrl = reader.IsDBNull(9) ? null : reader.GetString(9),
                 IsActive = reader.GetBoolean(10),
-                ProducibleBottles = reader.GetInt32(11)
+                ProducibleBottles = reader.GetInt32(11),
+                DiscountPercent = reader.GetDecimal(12),
+                FinalPrice = reader.GetDecimal(13)
             });
         }
         return perfumes;

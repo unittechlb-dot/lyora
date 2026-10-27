@@ -7,6 +7,10 @@
         {
             <span class="badge badge-out">Out of stock</span>
         }
+        @if (Model.HasDiscount)
+        {
+            <span class="badge badge-sale">−@Model.DiscountPercent.ToString("0.##")%</span>
+        }
     </div>
     <div class="perfume-info">
         <span class="eyebrow">@Model.CategoryName</span>
@@ -16,6 +20,6 @@
             <span class="tag">@Model.Style</span>
             <span class="tag">@Model.SizeMl ml</span>
         </div>
-        <span class="price">@Format.Money(Model.Price)</span>
+        <partial name="_Price" model="Model" />
     </div>
 </a>

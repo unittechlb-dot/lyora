@@ -1,0 +1,52 @@
+@model List<Promotion>
+@{
+    ViewData["Title"] = "Promotions";
+}
+
+<section class="container section">
+    <partial name="_AdminNav" />
+    <div class="page-title title-row">
+        <div>
+            <span class="eyebrow">Administrator</span>
+            <h1>Promotions</h1>
+            <p class="muted">The discount is applied automatically to the shop, the cart and new orders between the start and end dates.</p>
+        </div>
+        <a class="btn btn-gold" asp-action="Create">+ New promotion</a>
+    </div>
+
+    <div class="panel">
+        @if (Model.Count == 0)
+        {
+            <p class="muted">No promotions yet.</p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr><th>Promotion</th><th class="num">Discount</th><th>Dates</th><th>Perfumes</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
+                    {
+                        var status = p.IsActive ? "active" : p.IsUpcoming ? "upcoming" : "ended";
+                        <tr class="@(status == "ended" ? "row-muted" : "")">
+                            <td><strong>@p.Title</strong></td>
+                            <td class="num">−@p.DiscountPercent.ToString("0.##")%</td>
+                            <td>@p.StartDate.ToString("dd MMM yyyy") → @p.EndDate.ToString("dd MMM yyyy")</td>
+                            <td>@string.Join(", ", p.PerfumeNames)</td>
+                            <td><span class="status promo-@status">@(status == "active" ? "Active" : status == "upcoming" ? "Upcoming" : "Ended")</span></td>
+                            <td class="num nowrap">
+                                @if (status != "ended")
+                                {
+                                    <a class="link" asp-action="Send" asp-route-id="@p.PromotionId">Send</a>
+                                    <span class="muted"> · </span>
+                                }
+                                <a class="link" asp-action="Edit" asp-route-id="@p.PromotionId">Edit</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</section>

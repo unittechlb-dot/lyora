@@ -65,7 +65,7 @@
                                 }
                             </ul>
                         }
-                        <span class="price">@Format.Money(r.Perfume.Price)</span>
+                        <partial name="_Price" model="r.Perfume" />
                     </div>
                 </a>
             }
